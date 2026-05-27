@@ -37,6 +37,9 @@ async function initDb() {
       console.log('Successfully connected to MySQL database:', database);
       connection.release();
       dbType = 'mysql';
+
+      // Auto-seed MySQL if tables are empty (idempotent — safe to run on every startup)
+      await seedMySQLIfEmpty();
       return;
     } catch (err) {
       console.warn('Failed to connect to MySQL. Falling back to local SQLite database...', err.message);
@@ -255,6 +258,39 @@ async function query(sql, params = []) {
         });
       }
     });
+  }
+}
+
+// Auto-seed MySQL if core tables are empty (idempotent — seed uses ON DUPLICATE KEY UPDATE)
+async function seedMySQLIfEmpty() {
+  try {
+    const [rows] = await mysqlPool.query("SELECT COUNT(*) as count FROM roles");
+    if (rows[0].count > 0) {
+      console.log('[db] MySQL seed data already present, skipping auto-seed.');
+      return;
+    }
+
+    console.log('[db] MySQL tables are empty. Running auto-seed from seed.sql...');
+    const seedPath = path.join(__dirname, '..', 'database', 'seed.sql');
+    const seedSql = fs.readFileSync(seedPath, 'utf8');
+
+    // Execute seed as individual statements
+    const statements = seedSql
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+
+    for (const stmt of statements) {
+      try {
+        await mysqlPool.query(stmt);
+      } catch (e) {
+        console.warn('[db] Seed statement warning:', e.message);
+      }
+    }
+    console.log('[db] MySQL auto-seed complete. Roles, municipalities, and demo users loaded.');
+  } catch (err) {
+    console.warn('[db] Auto-seed check failed:', err.message);
+    // Non-fatal: server still starts, but registration may fail if seed is missing
   }
 }
 
