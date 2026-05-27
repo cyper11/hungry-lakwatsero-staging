@@ -51,6 +51,7 @@ if (CORS_ORIGIN && CORS_ORIGIN !== '*') {
 
 // --- Database ---
 const DB_HOST = process.env.DB_HOST || null;
+const DB_PORT = process.env.DB_PORT || '3306';
 const DB_USER = process.env.DB_USER || null;
 const DB_PASSWORD = process.env.DB_PASSWORD || null;
 const DB_NAME = process.env.DB_NAME || null;
@@ -75,7 +76,7 @@ if (missing.length > 0) {
 console.log(`[env] Environment: ${NODE_ENV}`);
 console.log(`[env] Auth: JWT_SECRET ${JWT_SECRET ? 'configured' : 'MISSING'}, JWT_REFRESH_SECRET ${JWT_REFRESH_SECRET ? 'configured' : 'MISSING'}`);
 console.log(`[env] CORS: ${Array.isArray(CORS_ORIGIN) ? CORS_ORIGIN.join(', ') : CORS_ORIGIN}`);
-console.log(`[env] Database: ${DB_HOST ? `MySQL @ ${DB_HOST}/${DB_NAME}` : 'SQLite (dev fallback)'}`);
+console.log(`[env] Database: ${DB_HOST ? `MySQL @ ${DB_HOST}:${DB_PORT}/${DB_NAME}` : 'SQLite (dev fallback)'}`);
 console.log(`[env] Uploads: ${UPLOAD_BASE_URL || 'relative paths (same-origin)'}, Cloudinary: ${CLOUDINARY_CLOUD_NAME ? 'configured' : 'not set (disk storage)'}`);
 console.log(`[env] API URL: ${API_BASE_URL}`);
 
@@ -88,6 +89,7 @@ module.exports = {
   JWT_REFRESH_SECRET,
   CORS_ORIGIN,
   DB_HOST,
+  DB_PORT,
   DB_USER,
   DB_PASSWORD,
   DB_NAME,
