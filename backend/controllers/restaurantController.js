@@ -1,6 +1,7 @@
 // Restaurant Controller
 const db = require('../config/db');
 const { logAction } = require('./authController');
+const { getFileUrl } = require('../config/cloudinary');
 
 const getRestaurants = async (req, res) => {
   try {
@@ -204,7 +205,7 @@ const uploadRestaurantImages = async (req, res) => {
     }
 
     for (const file of req.files) {
-      const url = `/uploads/${file.filename}`;
+      const url = getFileUrl(file);
       // Check if primary image already exists
       const existingPrimary = await db.query('SELECT id FROM restaurant_images WHERE restaurant_id = ? AND is_primary = TRUE', [id]);
       const isPrimary = existingPrimary.length === 0;
@@ -240,7 +241,7 @@ const addMenuItem = async (req, res) => {
 
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     await db.query(
@@ -296,7 +297,7 @@ const updateMenuItem = async (req, res) => {
 
     let imageUrl = image_url || items[0].image_url;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     await db.query(
@@ -333,10 +334,10 @@ const submitVerificationRequest = async (req, res) => {
     }
 
     const files = req.files || {};
-    const dtiUrl = files['dti'] ? `/uploads/${files['dti'][0].filename}` : null;
-    const barangayUrl = files['barangay'] ? `/uploads/${files['barangay'][0].filename}` : null;
-    const ownerIdUrl = files['owner_id'] ? `/uploads/${files['owner_id'][0].filename}` : null;
-    const businessPermitUrl = files['business_permit'] ? `/uploads/${files['business_permit'][0].filename}` : null;
+    const dtiUrl = files['dti'] ? getFileUrl(files['dti'][0]) : null;
+    const barangayUrl = files['barangay'] ? getFileUrl(files['barangay'][0]) : null;
+    const ownerIdUrl = files['owner_id'] ? getFileUrl(files['owner_id'][0]) : null;
+    const businessPermitUrl = files['business_permit'] ? getFileUrl(files['business_permit'][0]) : null;
 
     const documentUrl = businessPermitUrl || dtiUrl || barangayUrl || ownerIdUrl;
     if (!documentUrl) {
@@ -400,7 +401,7 @@ const addAnnouncement = async (req, res) => {
 
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     const mysqlExpiresAt = expiresAt ? new Date(expiresAt).toISOString().slice(0, 19).replace('T', ' ') : null;

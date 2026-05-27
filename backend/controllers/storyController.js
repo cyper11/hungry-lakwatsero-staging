@@ -1,6 +1,7 @@
 // Food Stories (CMS) Controller
 const db = require('../config/db');
 const { logAction } = require('./authController');
+const { getFileUrl } = require('../config/cloudinary');
 
 const getStories = async (req, res) => {
   try {
@@ -76,7 +77,7 @@ const createStory = async (req, res) => {
 
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     const result = await db.query(
@@ -106,7 +107,7 @@ const updateStory = async (req, res) => {
 
     let imageUrl = existing[0].image_url;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     await db.query(

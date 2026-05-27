@@ -1,6 +1,7 @@
 // Review and Community Controller
 const db = require('../config/db');
 const { logAction } = require('./authController');
+const { getFileUrl } = require('../config/cloudinary');
 
 const upsertRating = async (restaurantId, userId, ratingValue) => {
   const result = await db.query(
@@ -82,7 +83,7 @@ const addReview = async (req, res) => {
 
     let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = getFileUrl(req.file);
     }
 
     // Insert Review

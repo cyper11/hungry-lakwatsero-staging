@@ -35,4 +35,11 @@ function uploadFromBuffer(buffer, options = {}) {
   });
 }
 
-module.exports = { cloudinary, uploadFromBuffer, isConfigured };
+module.exports = { cloudinary, uploadFromBuffer, isConfigured, getFileUrl };
+
+function getFileUrl(fileObj) {
+  if (!fileObj) return null;
+  const name = fileObj.cloudinaryUrl || fileObj.filename || '';
+  if (!name) return null;
+  return name.startsWith('https://') ? name : `/uploads/${name}`;
+}

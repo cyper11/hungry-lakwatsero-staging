@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const env = require('../config/env');
+const { getFileUrl } = require('../config/cloudinary');
 
 // Helper to generate access & refresh tokens
 const generateTokens = (user) => {
@@ -83,7 +84,8 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
     const files = req.files || {};
-    const avatarUrl = files.profilePhoto?.[0] ? `/uploads/${files.profilePhoto[0].filename}` : null;
+
+    const avatarUrl = getFileUrl(files.profilePhoto?.[0]);
 
     // Create user
     const result = await db.query(
@@ -132,10 +134,10 @@ const register = async (req, res) => {
       );
       restaurantId = restaurantResult.insertId;
 
-      const dtiUrl = files.dtiDoc?.[0] ? `/uploads/${files.dtiDoc[0].filename}` : null;
-      const barangayUrl = files.brgyDoc?.[0] ? `/uploads/${files.brgyDoc[0].filename}` : null;
-      const ownerIdUrl = files.ownerIdDoc?.[0] ? `/uploads/${files.ownerIdDoc[0].filename}` : null;
-      const businessPermitUrl = files.businessPermit?.[0] ? `/uploads/${files.businessPermit[0].filename}` : null;
+      const dtiUrl = getFileUrl(files.dtiDoc?.[0]);
+      const barangayUrl = getFileUrl(files.brgyDoc?.[0]);
+      const ownerIdUrl = getFileUrl(files.ownerIdDoc?.[0]);
+      const businessPermitUrl = getFileUrl(files.businessPermit?.[0]);
       const documentUrl = businessPermitUrl || dtiUrl || barangayUrl || ownerIdUrl;
 
       if (documentUrl) {
@@ -170,8 +172,12 @@ const register = async (req, res) => {
       ...(env.isDev && { verificationToken })
     });
   } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: 'Server registration error. Please try again later.' });
+    console.error('Register error:', error.message, error.stack?.split('\n')[1]?.trim());
+    if (error.code) console.error('  DB error code:', error.code);
+    res.status(500).json({
+      message: 'Server registration error. Please try again later.',
+      ...(env.isDev && { detail: error.message })
+    });
   }
 };
 

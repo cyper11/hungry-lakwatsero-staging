@@ -73,7 +73,7 @@ exports.createPost = async (req, res) => {
     const restaurants = await db.query('SELECT id FROM restaurants WHERE id = ? AND owner_id = ?', [restaurantId, ownerId]);
     if (!restaurants.length) return res.status(403).json({ message: 'You do not own this restaurant.' });
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    const imageUrl = getFileUrl(req.file);
     const hashtagsJson = hashtags ? JSON.stringify(typeof hashtags === 'string' ? hashtags.split(',').map(h => h.trim()) : hashtags) : '[]';
 
     const result = await db.query(`
@@ -100,7 +100,7 @@ exports.updatePost = async (req, res) => {
     if (!existing.length) return res.status(404).json({ message: 'Post not found or not authorized.' });
 
     const hashtagsJson = hashtags ? JSON.stringify(typeof hashtags === 'string' ? hashtags.split(',').map(h => h.trim()) : hashtags) : existing[0].hashtags;
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : existing[0].image_url;
+    const imageUrl = req.file ? getFileUrl(req.file) : existing[0].image_url;
 
     await db.query(`
       UPDATE posts SET caption=?, post_type=?, hashtags=?, lat=?, lng=?, location_label=?, image_url=?, updated_at=CURRENT_TIMESTAMP
