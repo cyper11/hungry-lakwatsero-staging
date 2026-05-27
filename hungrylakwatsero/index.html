@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Premium custom logo favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- SEO Meta Tags -->
+    <title>HungryLakwatsero | Cavite Culinary Tourism Platform</title>
+    <meta name="description" content="Discover the best local restaurants, traditional dishes, food stories, and hidden culinary gems across all 23 municipalities of Cavite, Philippines. A green, premium food tourism platform." />
+    <meta name="keywords" content="Cavite food, Filipino cuisine, culinary tourism, Tagaytay bulalo, Imus longganisa, Cavite restaurants, food travel Philippines" />
+    <meta name="author" content="HungryLakwatsero" />
+    <meta name="theme-color" content="#82c341" />
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HungryLakwatsero | Cavite Culinary Tourism" />
+    <meta property="og:description" content="Explore authentic Filipino food across Cavite. Find top-rated restaurants, read food heritage stories, and discover hidden culinary gems." />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://hungrylakwatsero.ph" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Playfair Display + Nunito + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Nunito:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+
+
+    <!-- Theme Initialization: Prevents FOUC -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved || (prefersDark ? 'dark' : 'light');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="selection:bg-emerald-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

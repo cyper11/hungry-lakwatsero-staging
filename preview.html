@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eaty Wonders | Cavite Culinary Tourism (Interactive Preview)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fbf7',
+              100: '#dcf6ed',
+              500: '#10b981',
+              600: '#059669',
+              950: '#022c22',
+            },
+            accent: {
+              500: '#f59e0b',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #0b1120;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .leaflet-popup-content-wrapper {
+      background: rgba(15, 23, 42, 0.9) !important;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f1f5f9 !important;
+      border-radius: 0.5rem !important;
+    }
+    .leaflet-popup-tip {
+      background: rgba(15, 23, 42, 0.9) !important;
+    }
+    
+    /* Micro-animations and custom styling updates */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    @keyframes pulseMarker {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .marker-pulse {
+      animation: pulseMarker 2.2s infinite;
+    }
+
+    @keyframes pulseMarkerUser {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .marker-pulse-user {
+      animation: pulseMarkerUser 2.2s infinite;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10b981;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- NAVBAR -->
+  <nav class="glass-card sticky top-0 z-[2000] w-full border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center">
+          <a href="#" onclick="showSection('landing')" class="flex items-center gap-2">
+            <span class="text-2xl">🍜</span>
+            <span class="font-display font-extrabold text-xl tracking-tight text-gradient">EATY WONDERS</span>
+          </a>
+        </div>
+
+        <!-- Navigation Links -->
+        <div className="flex items-center space-x-6">
+          <button onclick="showSection('map')" class="text-slate-350 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="map" class="w-4 h-4"></i>
+            <span>Map Explorer</span>
+          </button>
+          <button onclick="showSection('stories')" class="text-slate-350 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Culinary Stories</span>
+          </button>
+          <button id="nav-dash" onclick="openActiveDashboard()" class="hidden text-slate-350 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            <span>My Dashboard</span>
+          </button>
+        </div>
+
+        <!-- User actions -->
+        <div class="flex items-center gap-3">
+          <div id="auth-guest" class="flex gap-2">
+            <button onclick="showSection('login')" class="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 transition">Sign In</button>
+            <button onclick="showSection('register')" class="text-xs font-bold text-slate-950 bg-gradient-to-r from-brand-500 to-emerald-400 px-4 py-2 rounded-lg transition hover:brightness-110">Register</button>
+          </div>
+          <div id="auth-logged" class="hidden flex items-center gap-3">
+            <div class="flex flex-col items-end">
+              <span id="user-badge-name" class="text-xs font-bold text-slate-100">User</span>
+              <span id="user-badge-role" class="text-[9px] uppercase font-bold text-brand-500 tracking-wider">Role</span>
+            </div>
+            <button onclick="handleLogout()" class="p-2 bg-slate-900 border border-slate-800 text-rose-455 hover:bg-rose-950/20 rounded-lg transition" title="Logout">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- SECTIONS CONTAINER -->
+  <main class="flex-grow relative">
+
+    <!-- 1. LANDING PAGE -->
+    <section id="sec-landing" class="section-panel py-16 px-4 max-w-7xl mx-auto space-y-16 animate-fade-in">
+      <div class="text-center max-w-3xl mx-auto space-y-6 pt-10">
+        <span class="px-3 py-1 bg-brand-950/80 border border-brand-500/20 text-brand-500 text-[10px] uppercase font-extrabold tracking-widest rounded-full">
+          🇵🇭 Cavite Gastronomy Heritage
+        </span>
+        <h1 class="font-display font-extrabold text-4xl md:text-6xl text-white leading-tight">
+          Discover the Hidden Flavors of <span class="text-gradient">Cavite</span>
+        </h1>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Embark on a culinary tourism experience. Locate premium bulalo houses, traditional kalamay kitchens, and historic coffee shops across Cavite's towns.
+        </p>
+
+        <!-- Search Form -->
+        <div class="glass-card p-2 rounded-2xl border border-slate-800 max-w-2xl mx-auto flex flex-col sm:flex-row gap-2">
+          <input id="landing-search" type="text" placeholder="Search traditional dishes, restaurants..." class="bg-transparent border-none outline-none w-full px-3 py-2.5 text-xs text-slate-200" />
+          <button onclick="triggerLandingSearch()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition shrink-0">Explore Map</button>
+        </div>
+      </div>
+
+      <!-- Quick Statistics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">6</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Municipalities</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">4</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Eateries Plotted</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">242</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Explorer Reviews</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">3</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Heritage Stories</p>
+        </div>
+      </div>
+
+      <!-- Featured Grid -->
+      <div class="space-y-6">
+        <h2 class="font-display font-extrabold text-2xl text-white">Featured Heritage Eateries</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="landing-restaurant-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MAP EXPLORER PAGE -->
+    <section id="sec-map" class="section-panel hidden flex flex-col lg:flex-row h-[calc(100vh-64px)] w-full overflow-hidden">
+      <!-- Left sidebar -->
+      <div class="w-full lg:w-96 bg-slate-900 border-r border-slate-800 flex flex-col h-2/5 lg:h-full shrink-0">
+        <div class="p-4 border-b border-slate-800 space-y-3">
+          <h2 class="font-display font-bold text-sm text-white flex items-center gap-1.5">
+            <i data-lucide="filter" class="w-4 h-4 text-brand-500"></i>
+            <span>Interactive Map Explorer</span>
+          </h2>
+          <div class="space-y-2 text-xs">
+            <input id="map-search" type="text" oninput="filterMapList()" placeholder="Search dishes, tags..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+            <select id="map-mun" onchange="filterMapList()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-350">
+              <option value="">All Municipalities</option>
+              <option value="Tagaytay">Tagaytay City</option>
+              <option value="Kawit">Kawit</option>
+              <option value="Silang">Silang</option>
+              <option value="Indang">Indang</option>
+              <option value="Imus">Imus City</option>
+              <option value="Bacoor">Bacoor City</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="map-restaurants-list" class="flex-grow overflow-y-auto p-2 space-y-2">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Sticky detail preview -->
+        <div id="map-selected-card" class="hidden p-4 bg-slate-950 border-t border-slate-850 space-y-3">
+          <div>
+            <h4 id="selected-card-name" class="font-bold text-xs text-brand-500">Selected Restaurant</h4>
+            <p id="selected-card-address" class="text-[10px] text-slate-500 mt-0.5">Address</p>
+          </div>
+          <button id="selected-card-link" class="w-full py-2 bg-brand-500 text-slate-950 font-bold text-[10px] rounded-lg text-center hover:bg-brand-600 transition">View Full Profile</button>
+        </div>
+      </div>
+
+      <!-- Map box -->
+      <div class="flex-grow h-3/5 lg:h-full relative bg-slate-950">
+        <div id="leaflet-map-element" class="w-full h-full" style="min-height: 350px;"></div>
+        <div class="absolute top-4 left-4 z-[1000] bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800 text-[10px] text-brand-500 font-bold">
+          Cavite Coverage Only
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RESTAURANT DETAILS PAGE -->
+    <section id="sec-restaurant-detail" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <button onclick="showSection('map')" class="text-xs text-slate-550 hover:text-brand-500 transition font-bold flex items-center gap-1">⬅ Back to Explorer</button>
+
+      {/* Header Banner */}
+      <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 flex items-end p-6">
+        <img id="detail-cover" src="" alt="cover" class="absolute inset-0 w-full h-full object-cover opacity-60" />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="z-10 space-y-2">
+          <span id="detail-mun" class="px-2.5 py-1 bg-brand-950 text-brand-500 text-[9px] uppercase font-bold rounded border border-brand-500/20">Municipality</span>
+          <h1 id="detail-name" class="font-display font-extrabold text-2xl md:text-4xl text-white">Eatery Name</h1>
+          <p id="detail-address" class="text-xs text-slate-350 flex items-center gap-1">📍 Address</p>
+        </div>
+      </div>
+
+      {/* Grid splits */}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        {/* Left (2/3) - story, menu */}
+        <div class="md:col-span-2 space-y-8">
+          <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-3">
+            <h2 class="font-display font-bold text-lg text-white">Culinary Story & History</h2>
+            <p id="detail-description" class="text-xs text-slate-300 leading-relaxed">Description</p>
+            <p id="detail-history" class="text-xs text-slate-450 italic leading-relaxed pt-2">History story</p>
+          </div>
+
+          <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+            <h2 class="font-display font-bold text-lg text-white">Traditional Recipe Menu</h2>
+            <div id="detail-menu-items" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        {/* Right (1/3) - info, reviews */}
+        <div class="space-y-8">
+          <div class="glass-card p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+            <h3 class="font-bold text-slate-100 border-b border-slate-800 pb-2">Eatery Information</h3>
+            <p class="text-slate-450"><strong>Hours:</strong> <span id="detail-hours" class="block text-slate-300 mt-0.5">Mon-Sun 8:00 AM - 10:00 PM</span></p>
+            <p id="detail-contact" class="text-slate-450"><strong>Phone:</strong> <span class="text-slate-300"></span></p>
+            <button onclick="toggleFavoriteLocal()" id="btn-fav" class="w-full py-2 bg-slate-900 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-455 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+              <span>Save Favorite</span>
+            </button>
+          </div>
+
+          {/* Reviews List */}
+          <div class="glass-card p-4 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="font-bold text-slate-100">Tourist Reviews</h3>
+            
+            {/* Submit review */}
+            <div id="detail-review-form" class="space-y-3 border-b border-slate-800 pb-4">
+              <select id="review-rating" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-amber-400 font-bold">
+                <option value="5">★★★★★ Excellent (5/5)</option>
+                <option value="4">★★★★☆ Very Good (4/5)</option>
+                <option value="3">★★★☆☆ Good (3/5)</option>
+                <option value="2">★★☆☆☆ Fair (2/5)</option>
+                <option value="1">★☆☆☆☆ Poor (1/5)</option>
+              </select>
+              <textarea id="review-content" placeholder="Submit your recipe review..." rows="2" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-200"></textarea>
+              <button onclick="submitReviewLocal()" class="w-full py-1.5 bg-brand-500 text-slate-950 text-[10px] font-bold rounded-lg transition hover:bg-brand-600">Submit Review</button>
+            </div>
+
+            <div id="detail-reviews-list" class="space-y-4 text-xs">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. CULINARY HERITAGE STORIES PAGE -->
+    <section id="sec-stories" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <div class="border-b border-slate-900 pb-6">
+        <span class="text-accent-500 text-xs font-bold uppercase tracking-widest">Culinary CMS</span>
+        <h1 class="font-display font-extrabold text-3xl text-white mt-1">Cavite Food Stories</h1>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feed links -->
+        <div id="stories-feed-list" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+
+        {/* Read details */}
+        <div class="md:col-span-2">
+          <div id="story-read-card" class="glass-card p-6 rounded-2xl border border-slate-800 space-y-6">
+            <h2 id="story-read-title" class="font-display font-extrabold text-xl md:text-2xl text-white">Select a Food Story</h2>
+            <div id="story-read-meta" class="flex gap-4 text-[10px] text-slate-500 uppercase tracking-wider font-bold"></div>
+            <p id="story-read-body" class="text-xs text-slate-350 leading-relaxed whitespace-pre-line">Loading details...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LOGIN PAGE -->
+    <section id="sec-login" class="section-panel hidden py-20 px-4 flex items-center justify-center">
+      <div class="max-w-md w-full glass-card p-8 rounded-2xl border border-slate-800 text-xs font-semibold text-slate-350 space-y-6">
+        <div class="text-center">
+          <h2 class="font-display text-2xl font-bold text-white">Sign In</h2>
+          <p class="text-[10px] text-slate-500 mt-1">Use demo credentials to access custom dashboards</p>
+        </div>
+        <div id="login-error" class="hidden p-2.5 bg-rose-950 border border-rose-900 text-rose-350 text-center rounded"></div>
+        
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label>Username / Email</label>
+            <input id="login-email" type="text" placeholder="e.g. admin / tourist_ph / mang_tomas" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" />
+          </div>
+          <div class="space-y-1">
+            <label>Password</label>
+            <input id="login-pass" type="password" value="password123" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" />
+          </div>
+
+          <div class="p-3 bg-slate-950 rounded border border-slate-850 flex items-center justify-between">
+            <span>What is 5 + 3?</span>
+            <input id="login-captcha" type="number" placeholder="Ans" class="w-16 bg-slate-900 border border-slate-800 rounded text-center text-slate-200" />
+          </div>
+
+          <button onclick="handleLoginLocal()" class="w-full py-3 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition">Sign In</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. REGISTER PAGE -->
+    <section id="sec-register" class="section-panel hidden py-12 px-4 flex flex-col items-center justify-center">
+      <div class="max-w-2xl w-full glass-card p-6 md:p-8 rounded-3xl border border-slate-800 text-xs font-semibold text-slate-350 space-y-6">
+        
+        <!-- Stepper Indicator -->
+        <div class="flex items-center justify-between max-w-md mx-auto pb-4 border-b border-slate-800/60 w-full">
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-1" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-brand-500 text-brand-500 bg-brand-950/40">1</div>
+            <span id="reg-step-label-1" class="text-[10px] uppercase font-bold text-brand-500 tracking-wider">Role</span>
+          </div>
+          <div class="h-0.5 bg-slate-800 flex-grow -mt-4"></div>
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-2" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-slate-800 text-slate-500 bg-slate-900">2</div>
+            <span id="reg-step-label-2" class="text-[10px] uppercase font-bold text-slate-550 tracking-wider">Account</span>
+          </div>
+          <div class="h-0.5 bg-slate-800 flex-grow -mt-4"></div>
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-3" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-slate-800 text-slate-500 bg-slate-900">3</div>
+            <span id="reg-step-label-3" class="text-[10px] uppercase font-bold text-slate-550 tracking-wider">Details</span>
+          </div>
+        </div>
+
+        <!-- STEP 1: ROLE SELECTION -->
+        <div id="reg-panel-1" class="space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Create Your Account</h2>
+            <p class="text-[10px] text-slate-400">Choose your role to get started.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Tourist -->
+            <div id="reg-role-1" onclick="setRegRole(1)" class="reg-role-card p-5 bg-slate-900/50 border border-brand-500 bg-brand-950/20 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-brand-950 border border-brand-500/30 flex items-center justify-center text-brand-500">
+                <i data-lucide="user" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm a Tourist</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Explore restaurants, write reviews, save favorites, and discover amazing food.</p>
+              </div>
+            </div>
+
+            <!-- Food Owner -->
+            <div id="reg-role-2" onclick="setRegRole(2)" class="reg-role-card p-5 bg-slate-900/50 border border-slate-800 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon hidden"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i data-lucide="store" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm a Food Owner</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Manage your restaurant, menus, reviews, and grow your food business.</p>
+              </div>
+            </div>
+
+            <!-- Administrator -->
+            <div id="reg-role-3" onclick="setRegRole(3)" class="reg-role-card p-5 bg-slate-900/50 border border-slate-800 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon hidden"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i data-lucide="shield" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm an Admin</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Moderate listings, manage users, content, reports, and system settings.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button onclick="nextRegStep()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <span>Next</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: ACCOUNT INFORMATION -->
+        <div id="reg-panel-2" class="hidden space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Account Information</h2>
+            <p class="text-[10px] text-slate-400">Enter your credentials to secure your account.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label>Full Name *</label>
+              <input id="reg-name" type="text" placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1">
+              <label>Email Address *</label>
+              <input id="reg-email" type="email" placeholder="e.g. juan@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1 relative">
+              <label>Password *</label>
+              <input id="reg-password" type="password" oninput="handlePasswordInput()" placeholder="Create secure password" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1">
+              <label>Confirm Password *</label>
+              <input id="reg-confirm-password" type="password" placeholder="Confirm password" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+          </div>
+
+          <!-- Password Checklist -->
+          <div class="p-4 bg-slate-950 border border-slate-900 rounded-2xl space-y-2">
+            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Password Requirements</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-medium text-slate-500">
+              <div id="pw-check-length" class="flex items-center gap-1.5"><span class="chk-icon">○</span> At least 8 characters</div>
+              <div id="pw-check-upper" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One uppercase letter</div>
+              <div id="pw-check-lower" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One lowercase letter</div>
+              <div id="pw-check-number" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One numeric digit</div>
+              <div id="pw-check-special" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One special character</div>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button onclick="prevRegStep()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-850 transition flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> <span>Back</span>
+            </button>
+            <button onclick="nextRegStep()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <span>Next</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: ROLE-SPECIFIC DETAILS -->
+        <div id="reg-panel-3" class="hidden space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Details Verification</h2>
+            <p class="text-[10px] text-slate-400">Complete your profile setup based on your role.</p>
+          </div>
+
+          <!-- Tourist Fields -->
+          <div id="reg-fields-tourist" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Nationality</label>
+                <select id="reg-nationality" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300">
+                  <option value="Filipino">Filipino</option>
+                  <option value="American">American</option>
+                  <option value="Japanese">Japanese</option>
+                  <option value="Korean">Korean</option>
+                  <option value="Canadian">Canadian</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label>Travel Preference</label>
+                <select id="reg-preference" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300">
+                  <option value="Street Food">Street Food Explorer</option>
+                  <option value="Fine Dining">Heritage Fine Dining</option>
+                  <option value="Cafes">Local Coffee & Cafes</option>
+                  <option value="Kakanin">Sweet Delicacies / Native</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Food Owner Fields -->
+          <div id="reg-fields-owner" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Business / Restaurant Name *</label>
+                <input id="reg-biz-name" type="text" placeholder="e.g. Rasa Lokal Silang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant Address *</label>
+                <input id="reg-biz-address" type="text" placeholder="e.g. Brgy. Hukay, Silang, Cavite" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Business Registration Date</label>
+                <input id="reg-biz-date" type="date" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300" />
+              </div>
+              <div class="space-y-1">
+                <label>Upload Business Permit (DTI/SEC/Mayor's Permit) *</label>
+                <input id="reg-biz-permit" type="file" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-[10px] text-slate-500" />
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label>Business Description</label>
+              <textarea id="reg-biz-desc" placeholder="Briefly describe your culinary heritage offering..." rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200"></textarea>
+            </div>
+          </div>
+
+          <!-- Admin Fields -->
+          <div id="reg-fields-admin" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Admin Security Code *</label>
+                <input id="reg-admin-code" type="password" placeholder="Enter security access code" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+                <p class="text-[9px] text-slate-500">For mock testing, use code: <span class="text-brand-500 font-bold">eatywonders2026</span></p>
+              </div>
+              <div class="space-y-1">
+                <label>Department</label>
+                <input id="reg-admin-dept" type="text" placeholder="e.g. Culinary Moderation" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button onclick="prevRegStep()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-850 transition flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> <span>Back</span>
+            </button>
+            <button onclick="submitRegistration()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> <span>Create Account</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. TOURIST DASHBOARD -->
+    <section id="sec-tourist-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      
+      <!-- User Profile Header Card -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center gap-5 justify-between">
+        <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+          <div id="tourist-profile-avatar" class="w-16 h-16 rounded-full bg-gradient-to-tr from-brand-500 to-emerald-400 border border-brand-500/30 flex items-center justify-center text-slate-950 text-2xl font-black">
+            JD
+          </div>
+          <div>
+            <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              <h2 id="tourist-profile-name" class="font-display text-xl font-bold text-white">Juan Dela Cruz</h2>
+              <span class="px-2 py-0.5 bg-brand-950 border border-brand-500/25 text-brand-500 text-[8px] uppercase tracking-wider font-extrabold rounded">Level 3 Explorer</span>
+            </div>
+            <p id="tourist-profile-email" class="text-xs text-slate-400 mt-1">juan@example.com</p>
+            <p class="text-[10px] text-slate-500 mt-1">🇵🇭 Cavite Gastronomy Local Guide</p>
+          </div>
+        </div>
+        
+        <!-- Quick stats cards -->
+        <div class="flex gap-4 text-center text-xs">
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-reviews" class="text-white font-extrabold text-sm">2</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Reviews</p>
+          </div>
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-favs" class="text-white font-extrabold text-sm">1</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Favorites</p>
+          </div>
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-photos" class="text-white font-extrabold text-sm">4</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Photos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Buttons Navigation -->
+      <div class="flex gap-1 border-b border-slate-800/60 overflow-x-auto pb-0.5 w-full">
+        <button id="btn-t-tab-favs" onclick="switchTouristTab('favs')" class="px-4 py-2.5 text-xs font-bold text-brand-500 border-b-2 border-brand-500 transition whitespace-nowrap">
+          <i data-lucide="heart" class="w-3.5 h-3.5 inline mr-1"></i> My Favorites
+        </button>
+        <button id="btn-t-tab-reviews" onclick="switchTouristTab('reviews')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5 inline mr-1"></i> My Reviews
+        </button>
+        <button id="btn-t-tab-photos" onclick="switchTouristTab('photos')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="camera" class="w-3.5 h-3.5 inline mr-1"></i> Food Photos
+        </button>
+        <button id="btn-t-tab-settings" onclick="switchTouristTab('settings')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="settings" class="w-3.5 h-3.5 inline mr-1"></i> Explorer Settings
+        </button>
+      </div>
+
+      <!-- Content Panels -->
+      <div id="tourist-panel-container">
+        
+        <!-- PANEL: FAVORITES -->
+        <div id="t-panel-favs" class="t-tab-panel space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display font-bold text-base text-white">Saved Restaurants</h3>
+            <button onclick="showSection('map')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-brand-500/30 text-brand-500 rounded-lg text-[10px] font-bold transition">Explore More Locations</button>
+          </div>
+          <div id="tourist-favs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: REVIEWS -->
+        <div id="t-panel-reviews" class="t-tab-panel hidden space-y-6">
+          <h3 class="font-display font-bold text-base text-white">My Reviews History</h3>
+          <div id="tourist-reviews-list" class="space-y-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: PHOTOS -->
+        <div id="t-panel-photos" class="t-tab-panel hidden space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display font-bold text-base text-white">My Food Gallery</h3>
+            <div class="flex items-center gap-2">
+              <input type="file" id="tourist-photo-file" class="hidden" onchange="uploadTouristPhotoLocal()" />
+              <button onclick="document.getElementById('tourist-photo-file').click()" class="px-4 py-2 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Photo
+              </button>
+            </div>
+          </div>
+          <div id="tourist-photos-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: SETTINGS -->
+        <div id="t-panel-settings" class="t-tab-panel hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 max-w-xl text-xs font-semibold text-slate-350 space-y-4">
+            <h3 class="font-display font-bold text-base text-white border-b border-slate-800 pb-2">Edit Account Info</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>First Name</label>
+                <input id="t-sett-fname" type="text" value="Juan" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Last Name</label>
+                <input id="t-sett-lname" type="text" value="Dela Cruz" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Nationality</label>
+                <input id="t-sett-nation" type="text" value="Filipino" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Travel Preference</label>
+                <select id="t-sett-pref" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-300">
+                  <option value="Street Food">Street Food Explorer</option>
+                  <option value="Fine Dining">Heritage Fine Dining</option>
+                  <option value="Cafes">Local Coffee & Cafes</option>
+                  <option value="Kakanin">Sweet Delicacies / Native</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="updateTouristSettingsLocal()" class="w-full py-2 bg-brand-500 text-slate-950 font-bold rounded-lg hover:bg-brand-600 transition">Save Changes</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 8. OWNER DASHBOARD -->
+    <section id="sec-owner-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      
+      <!-- Dashboard Title Header -->
+      <div class="border-b border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 w-full">
+        <div>
+          <span class="text-brand-500 text-xs font-bold uppercase tracking-widest">Merchant Portal</span>
+          <h1 id="owner-dashboard-title" class="font-display text-2xl font-bold text-white">Tomas Heritage Kitchen</h1>
+        </div>
+        <div class="text-xs">
+          Status: <span id="owner-status-badge" class="px-2 py-0.5 bg-emerald-950 text-brand-500 rounded border border-brand-500/10 font-bold uppercase">Approved</span>
+        </div>
+      </div>
+
+      <!-- Merchant Stats Grid -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="owner-stat-total-reviews" class="text-lg font-bold text-white">1</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Customer Reviews</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span class="text-lg font-bold text-white">86</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Menu Views</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="owner-stat-rating" class="text-lg font-bold text-brand-500">4.8 ★</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Average Rating</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Left Column (2/3): Edit profile + Menu manager + Review replies -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Eatery Profile Settings -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h2 class="font-display font-bold text-base text-white border-b border-slate-850 pb-2">Eatery Profile Information</h2>
+            <form onsubmit="updateOwnerProfileLocal(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label>Restaurant Name *</label>
+                  <input type="text" id="owner-rest-name" value="Tomas Heritage Kitchen" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Address *</label>
+                  <input type="text" id="owner-rest-address" value="Tirona Highway, Kawit, Cavite" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Opening Hours</label>
+                  <input type="text" id="owner-rest-hours" value="Mon-Sun 8:00 AM - 10:00 PM" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Phone Number</label>
+                  <input type="text" id="owner-rest-phone" value="+63 917 123 4567" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Latitude</label>
+                  <input type="number" step="any" id="owner-rest-lat" value="14.4420" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Longitude</label>
+                  <input type="number" step="any" id="owner-rest-lng" value="120.9102" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant Description</label>
+                <textarea id="owner-rest-desc" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200">Fresh oysters harvested straight from the shores of Bacoor Bay, prepared in both traditional and modern Caviteño styles.</textarea>
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant History Story</label>
+                <textarea id="owner-rest-history" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200">Kawit is deeply linked to the sea. Our restaurant showcases the local oyster farming (talaba) heritage that has sustained Cavite families for generations.</textarea>
+              </div>
+              <button type="submit" class="w-full py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl hover:bg-brand-600 transition">Update Listing Profile</button>
+            </form>
+          </div>
+
+          <!-- Recipe & Menu Manager -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <div class="flex justify-between items-center border-b border-slate-850 pb-2">
+              <h2 class="font-display font-bold text-base text-white">Manage Menu Items</h2>
+              <button onclick="toggleMenuFormLocal()" class="px-2.5 py-1.5 bg-brand-500 text-slate-950 font-bold rounded-lg hover:bg-brand-600 transition flex items-center gap-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Dish
+              </button>
+            </div>
+
+            <!-- Inline Add/Edit Menu Item Form -->
+            <div id="owner-menu-form" class="hidden p-4 bg-slate-950 border border-slate-900 rounded-xl space-y-3">
+              <h3 class="font-bold text-white text-xs">Add New Menu Dish</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1">
+                  <label>Dish Name *</label>
+                  <input type="text" id="owner-dish-name" placeholder="e.g. Garlic Baked Oysters" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Category *</label>
+                  <select id="owner-dish-category" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-350">
+                    <option value="Main Course">Main Course</option>
+                    <option value="Appetizer">Appetizer</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Beverage">Beverage</option>
+                  </select>
+                </div>
+                <div class="space-y-1">
+                  <label>Price (PHP) *</label>
+                  <input type="number" id="owner-dish-price" placeholder="e.g. 350" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-200" />
+                </div>
+              </div>
+              <button onclick="saveDishLocal()" class="w-full py-1.5 bg-brand-500 text-slate-950 font-bold rounded hover:bg-brand-600 transition">Save Menu Dish</button>
+            </div>
+
+            <!-- Menu Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-500">
+                    <th class="py-2">Dish Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="owner-menu-tbody" class="divide-y divide-slate-850">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Reviews & Replies Threading -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h2 class="font-display font-bold text-base text-white border-b border-slate-850 pb-2">Customer Reviews & Replies</h2>
+            <div id="owner-reviews-thread" class="space-y-4">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column (1/3): Business Permit Upload -->
+        <div class="space-y-8">
+          
+          <!-- Verification uploads -->
+          <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h3 class="font-display font-bold text-sm text-white">Upload Business Permit</h3>
+            <p class="text-[10px] text-slate-500 leading-relaxed">Provide DTI or business permit registration document to request admin approval for listing mapping.</p>
+            <input type="file" id="permit-doc-input" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-[10px] text-slate-500" />
+            <button onclick="requestVerificationLocal()" class="w-full py-2 bg-slate-900 border border-slate-800 hover:border-brand-500/30 text-brand-500 font-bold rounded-xl transition">Submit Verification Request</button>
+          </div>
+
+          <!-- Merchant Guideline Tips -->
+          <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3 text-xs text-slate-400">
+            <h4 class="font-bold text-white">💡 Merchant Tips</h4>
+            <ul class="list-disc pl-4 space-y-2 leading-relaxed text-[10px]">
+              <li>Keep your opening hours accurate so tourists can plan their trips.</li>
+              <li>Include traditional heritage stories behind your dishes; travelers love culinary history!</li>
+              <li>Always reply politely to reviews to build community trust.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 9. ADMIN DASHBOARD -->
+    <section id="sec-admin-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <div class="border-b border-slate-900 pb-4">
+        <span class="text-brand-500 text-xs font-bold uppercase tracking-widest">Superuser Console</span>
+        <h1 class="font-display text-2xl font-bold text-white">Admin Dashboard</h1>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-users-count" class="text-lg font-bold text-white">4</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Total Users</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-pending-count" class="text-lg font-bold text-white">1</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Pending Permits</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-audits-count" class="text-lg font-bold text-white">12</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Audit Events</p>
+        </div>
+      </div>
+
+      <!-- Verification moderators -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="shield" class="w-4 h-4 text-brand-500"></i> Business Verification Queue</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Restaurant</th>
+                <th>Permit Document</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-verif-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Flagged Content Moderator -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> Flagged Content Moderator</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Eatery</th>
+                <th>Author</th>
+                <th>Reported Review</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-flagged-tbody" class="divide-y divide-slate-850">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Database -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-emerald-400"></i> User Accounts Database</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- System Security Audit Logs -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Security Audit Logs</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Timestamp</th>
+                <th>User</th>
+                <th>Event Action</th>
+                <th>Entity Type</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="admin-audit-tbody" class="divide-y divide-slate-850">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+           // State Store
+    const state = {
+      user: null,
+      favorites: [1],
+      restaurants: [
+        { id: 1, name: 'Tagaytay Bulalo House', address: 'Maharlika Highway East, Tagaytay City, Cavite', latitude: 14.1205, longitude: 120.9585, average_rating: 5.0, rating_count: 1, primary_image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80', municipality_name: 'Tagaytay City', description: 'Serving Cavite\'s most authentic premium beef bulalo with marrow bones in a rich slow-simmered broth.', contact_info: '+63 46 413 9999', business_hours: 'Mon-Sun 8:00 AM - 10:00 PM', history_story: 'Established in 1995, Tagaytay Bulalo House started as a small roadside carinderia servicing drivers braving the cold Tagaytay weather, eventually growing into a tourism landmark.', owner_id: 3, status: 'approved', menu: [{ name: 'Traditional Bulalo Overload', category: 'Main Course', price: 550 }, { name: 'Crispy Tawilis', category: 'Appetizer', price: 220 }], reviews: [{ id: 1, username: 'tourist_ph', first_name: 'Juan', last_name: 'Dela Cruz', rating_value: 5, content: 'Best Bulalo in Cavite! The soup is hot, and the bone marrow is absolutely huge. Great view and very cool weather.', comments: [] }] },
+        { id: 2, name: 'Kawit Heritage Oyster & Seafood Bar', address: 'Tirona Highway, Kawit, Cavite', latitude: 14.4420, longitude: 120.9102, average_rating: 4.8, rating_count: 0, primary_image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=400&q=80', municipality_name: 'Kawit', description: 'Fresh oysters harvested straight from the shores of Bacoor Bay, prepared in both traditional and modern Caviteño styles.', contact_info: '+63 917 123 4567', business_hours: 'Tue-Sun 11:00 AM - 9:00 PM', history_story: 'Kawit is deeply linked to the sea. Our restaurant showcases the local oyster farming (talaba) heritage that has sustained Cavite families for generations.', owner_id: 2, status: 'pending', menu: [{ name: 'Fresh Oysters in Ice Box', category: 'Appetizer', price: 280 }, { name: 'Baked Garlic Butter Oysters', category: 'Main Course', price: 340 }], reviews: [] },
+        { id: 3, name: 'Silang Farm Garden Cafe', address: 'Laguna-Bel Air Bypass Road, Silang, Cavite', latitude: 14.2185, longitude: 120.9820, average_rating: 2.5, rating_count: 2, primary_image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', municipality_name: 'Silang', description: 'A scenic farm-to-table dining experience nestled inside a tropical flower nursery. We roast organic Coffea Liberica (Barako) fresh.', contact_info: '+63 46 888 1234', business_hours: 'Wed-Mon 9:00 AM - 8:00 PM', history_story: 'Built as an extension of a family-run garden nursery, Silang Farm Cafe highlights the town\'s agricultural strength and provides a serene sanctuary for coffee lovers.', owner_id: 2, status: 'approved', menu: [{ name: 'Barako Coffee Glazed Ribs', category: 'Main Course', price: 420 }, { name: 'Fresh Barako Drip Coffee', category: 'Beverage', price: 110 }], reviews: [{ id: 2, username: 'tourist_ph', first_name: 'Juan', last_name: 'Dela Cruz', rating_value: 4, content: 'Very relaxing place! The coffee-glazed ribs were unique and delicious. A must-visit when exploring Silang.', comments: [] }, { id: 101, username: 'spammer_99', first_name: 'Promo', last_name: 'Bot', rating_value: 1, content: 'CHEAP WATCHES AND ADVERTISEMENTS! VISIT FAKE-URL.COM FOR DEALS!', flagged: true, comments: [] }] },
+        { id: 4, name: 'Imus Longganisa Hub', address: 'Gen. Castañeda St, Imus, Cavite', latitude: 14.4312, longitude: 120.9388, average_rating: 4.5, rating_count: 0, primary_image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=400&q=80', municipality_name: 'Imus City', description: 'Home of the signature garlicky, sour Imus longganisa, served with garlic fried rice and local vinegar.', contact_info: '+63 922 987 6543', business_hours: 'Mon-Sat 6:00 AM - 3:00 PM', history_story: 'Created to preserve the original 1950s recipe of Imus-style native longganisa, which uses natural pork casings, heavy garlic, black pepper, and local Cavite sea salt.', owner_id: 2, status: 'approved', menu: [{ name: 'Imus Longganisa Breakfast Platter', category: 'Main Course', price: 180 }], reviews: [] }
+      ],
+      stories: [
+        { id: 1, title: 'The Legend of Cavite City\'s Pancit Estacion', content: 'Pancit Estacion is a unique Caviteño dish featuring rice noodles (bihon) topped with a savory orange sauce made from ground mung beans (togue), shrimp, and sour kamias. Its history traces back to the old railway station (estacion) in Cavite City where commuters grabbed a quick, sour noodle breakfast before catching the train.', author_name: 'Admin', municipality_name: 'Kawit', traditional_dishes: 'Pancit Estacion, Quesillo', image_url: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=400&q=80', created_at: '2026-05-23T10:00:00Z' },
+        { id: 2, title: 'The Sweet Tradition of Kalamay Indang', content: 'Kalamay Indang is a sticky sweet delicacy made from sticky rice flour (malagkit), brown sugar, and rich coconut milk, slow-stirred in large brass pans (kawa) for over four hours. In Indang, this sweet treat is a symbol of community cooperation, traditionally served during family gatherings, town fiestas, and milestones.', author_name: 'Admin', municipality_name: 'Indang', traditional_dishes: 'Kalamay Indang, Tablea', image_url: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?auto=format&fit=crop&w=400&q=80', created_at: '2026-05-23T11:00:00Z' },
+        { id: 3, title: 'Tagaytay\'s Cold Climate and the Rise of Bulalo Culture', content: 'Why did Bulalo become Tagaytay\'s signature dish? In the early 20th century, Tagaytay served as a cooling mountain retreat. The chilly winds and pastures of Cavite\'s highlands made beef raising popular. Visitors naturally craved a steaming bowl of beef marrow soup to combat the altitude cold, sparking a restaurant boom.', author_name: 'Admin', municipality_name: 'Tagaytay City', traditional_dishes: 'Bulalo, Crispy Tawilis', image_url: 'https://images.unsplash.com/photo-1547928576-a4a33237eceb?auto=format&fit=crop&w=400&q=80', created_at: '2026-05-23T12:00:00Z' }
+      ],
+      users: [
+        { id: 1, username: 'admin', email: 'admin@eatywonders.gov.ph', first_name: 'EatyWonders', last_name: 'Admin', role_name: 'Admin', is_active: true },
+        { id: 2, username: 'mang_tomas', email: 'tomas@caviteeats.com', first_name: 'Tomas', last_name: 'Alcantara', role_name: 'Food Business Owner', is_active: true },
+        { id: 3, username: 'aling_nena', email: 'nena@tagaytaybulalohouse.com', first_name: 'Nena', last_name: 'Santos', role_name: 'Food Business Owner', is_active: true },
+        { id: 4, username: 'tourist_ph', email: 'juan.delacruz@gmail.com', first_name: 'Juan', last_name: 'Dela Cruz', role_name: 'Tourist', is_active: true }
+      ],
+      photos: [
+        { id: 1, url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80', caption: 'Steaming Bulalo bones in Tagaytay!' },
+        { id: 2, url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', caption: 'Organic salad and Cavite tablea chocolate' },
+        { id: 3, url: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&q=80', caption: 'Traditional Pancit at Kawit Oysters' },
+        { id: 4, url: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?auto=format&fit=crop&w=400&q=80', caption: 'Kalamay Indang sweet treats!' }
+      ],
+      audits: [
+        { id: 1, user: 'admin', action: 'APPROVE_RESTAURANT', entityType: 'Restaurant', entityId: 'Tagaytay Bulalo House', ip: '127.0.0.1', details: 'Approved listing for owner ID 3', timestamp: '2026-05-23 22:14:05' },
+        { id: 2, user: 'admin', action: 'CREATE_STORY', entityType: 'Story', entityId: 'The Legend of Pancit Estacion', ip: '127.0.0.1', details: 'Created story about Kawit', timestamp: '2026-05-23 21:55:30' }
+      ]
+    };
+
+    let map = null;
+    let markersLayer = null;
+    let routeLayers = [];
+    let activeRestaurantId = null;
+
+    // Helper: System Audit Logger
+    function addAuditLogLocal(action, entityType, entityId, details = '') {
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      const newAudit = {
+        id: Date.now(),
+        user: state.user ? state.user.username : 'guest',
+        action: action,
+        entityType: entityType,
+        entityId: entityId,
+        ip: '127.0.0.1',
+        details: details,
+        timestamp: timestamp
+      };
+      state.audits.unshift(newAudit);
+    }
+
+    // View Routing
+    function showSection(sectionId) {
+      document.querySelectorAll('.section-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('sec-' + sectionId).classList.remove('hidden');
+
+      // Initialize Leaflet Map if Map Explorer is selected
+      if (sectionId === 'map') {
+        setTimeout(initPreviewMap, 100);
+      }
+    }
+
+    // Initialize Map
+    function initPreviewMap() {
+      if (map) return;
+
+      map = L.map('leaflet-map-element', {
+        center: [14.2811, 120.9168], // Cavite
+        zoom: 11
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      markersLayer = L.layerGroup().addTo(map);
+      updateMapMarkers();
+    }
+
+    function updateMapMarkers() {
+      if (!markersLayer) return;
+      markersLayer.clearLayers();
+
+      const createCustomIcon = (color = '#10b981') => {
+        return L.divIcon({
+          html: `<div class="marker-pulse" style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5)"></div>`,
+          className: 'marker-dot',
+          iconSize: [14, 14]
+        });
+      };
+
+      state.restaurants.forEach(r => {
+        if (r.status !== 'approved') return;
+
+        const marker = L.marker([r.latitude, r.longitude], {
+          icon: createCustomIcon('#10b981')
+        });
+
+        marker.bindPopup(`
+          <div class="text-xs text-slate-100 p-1">
+            <h4 class="font-bold text-brand-500">${r.name}</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">${r.address}</p>
+            <div class="flex gap-1.5 mt-2">
+              <button onclick="viewRestaurantDetails(${r.id})" class="px-2 py-1 bg-brand-500 text-slate-950 font-bold rounded text-[9px]">View Profile</button>
+              <button onclick="drawPreviewRoute([${r.latitude}, ${r.longitude}])" class="px-2 py-1 bg-slate-800 border border-slate-700 text-slate-200 rounded text-[9px]">Route</button>
+            </div>
+          </div>
+        `);
+        markersLayer.addLayer(marker);
+      });
+    }
+
+    function clearRouteLayers() {
+      routeLayers.forEach(layer => layer.remove());
+      routeLayers = [];
+    }
+
+    function drawPreviewRoute(endLatLng) {
+      if (!map) return;
+      clearRouteLayers();
+
+      const start = [14.4449, 120.9064]; // simulated GPS user location (Kawit Plaza)
+      
+      const userIcon = L.divIcon({
+        html: `<div class="marker-pulse-user" style="background-color: #3b82f6; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.5)"></div>`,
+        className: 'marker-dot-user',
+        iconSize: [14, 14]
+      });
+      
+      const userMarker = L.marker(start, { icon: userIcon }).addTo(map)
+        .bindPopup('<div class="text-[10px] text-slate-100 font-bold p-1">Your Location (Kawit Plaza)</div>')
+        .openPopup();
+      routeLayers.push(userMarker);
+
+      // Glowing route visual helper
+      const glowPolyline = L.polyline([start, endLatLng], {
+        color: '#3b82f6',
+        weight: 8,
+        opacity: 0.25
+      }).addTo(map);
+      routeLayers.push(glowPolyline);
+
+      const mainPolyline = L.polyline([start, endLatLng], {
+        color: '#3b82f6',
+        weight: 3,
+        dashArray: '5, 5'
+      }).addTo(map);
+      routeLayers.push(mainPolyline);
+
+      const bounds = L.latLngBounds([start, endLatLng]);
+      map.fitBounds(bounds, { padding: [50, 50] });
+      alert('Routing calculated from Kawit Plaza to restaurant marker!');
+    }
+
+    // Populate Lists
+    function populateLandingGrid() {
+      const grid = document.getElementById('landing-restaurant-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      state.restaurants.forEach(r => {
+        if (r.status !== 'approved') return;
+        grid.innerHTML += `
+          <div class="glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-500/20 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+            <div class="h-44 w-full bg-slate-900 overflow-hidden">
+              <img src="${r.primary_image}" alt="${r.name}" class="w-full h-full object-cover" />
+            </div>
+            <div class="p-5 flex flex-col justify-between flex-grow">
+              <div>
+                <span class="text-[9px] font-bold text-brand-500 uppercase tracking-widest">${r.municipality_name}</span>
+                <h3 class="font-display font-bold text-base text-white mt-1">${r.name}</h3>
+                <p class="text-xs text-slate-450 mt-1 line-clamp-2">${r.description}</p>
+              </div>
+              <div class="mt-5 pt-3 border-t border-slate-850 flex items-center justify-between">
+                <button onclick="viewRestaurantDetails(${r.id})" class="text-xs font-bold text-brand-500 hover:underline">Explore profile ➔</button>
+                <span class="text-[10px] text-slate-500">★ ${r.average_rating.toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function viewRestaurantDetails(id) {
+      activeRestaurantId = id;
+      const r = state.restaurants.find(item => item.id === id);
+      if (!r) return;
+
+      document.getElementById('detail-name').innerText = r.name;
+      document.getElementById('detail-address').innerText = '📍 ' + r.address;
+      document.getElementById('detail-mun').innerText = r.municipality_name;
+      document.getElementById('detail-description').innerText = r.description;
+      document.getElementById('detail-history').innerText = `"${r.history_story}"`;
+      document.getElementById('detail-hours').innerText = r.business_hours;
+      document.getElementById('detail-cover').src = r.primary_image;
+
+      // Menu
+      const menuDiv = document.getElementById('detail-menu-items');
+      menuDiv.innerHTML = '';
+      if (r.menu && r.menu.length > 0) {
+        r.menu.forEach(item => {
+          menuDiv.innerHTML += `
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-850 flex justify-between items-center text-xs">
+              <div>
+                <strong class="text-slate-100 block">${item.name}</strong>
+                <span class="text-[10px] text-slate-500">${item.category}</span>
+              </div>
+              <span class="text-accent-500 font-bold">₱${item.price.toFixed(2)}</span>
+            </div>
+          `;
+        });
+      } else {
+        menuDiv.innerHTML = '<div class="col-span-full py-4 text-center text-slate-500 italic text-[11px]">No custom dishes added yet.</div>';
+      }
+
+      // Reviews
+      populateDetailsReviews(r);
+
+      // Fav button state
+      const isFav = state.favorites.includes(id);
+      document.getElementById('btn-fav').className = isFav
+        ? "w-full py-2 bg-rose-950/40 border border-rose-900 text-rose-455 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5"
+        : "w-full py-2 bg-slate-900 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-455 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5";
+
+      showSection('restaurant-detail');
+    }
+
+    function populateDetailsReviews(restaurant) {
+      const list = document.getElementById('detail-reviews-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      if (restaurant.reviews.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 italic">No reviews yet.</p>';
+        return;
+      }
+
+      restaurant.reviews.forEach(rev => {
+        let repliesHtml = '';
+        if (rev.comments && rev.comments.length > 0) {
+          rev.comments.forEach(comment => {
+            repliesHtml += `
+              <div class="mt-2 pl-3 border-l-2 border-brand-500 text-[10px] space-y-0.5 ml-2">
+                <span class="font-bold text-brand-500">Merchant Reply (${comment.username}):</span>
+                <p class="text-slate-400 italic">${comment.text}</p>
+              </div>
+            `;
+          });
+        }
+
+        const isMyReview = state.user && state.user.username === rev.username;
+        const flagButton = (!state.user || (!isMyReview && !rev.flagged))
+          ? `<button onclick="flagReviewLocal(${restaurant.id}, ${rev.id})" class="text-[9px] text-slate-500 hover:text-rose-450 transition flex items-center gap-0.5 ml-2"><i data-lucide="flag" class="w-3 h-3"></i> Report</button>`
+          : (rev.flagged ? `<span class="text-[9px] text-rose-500 font-bold flex items-center gap-0.5 ml-2"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Reported</span>` : '');
+
+        list.innerHTML += `
+          <div class="pt-3 border-b border-slate-850 pb-3 space-y-1">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-200">${rev.first_name} (${rev.username})</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-amber-500">★ ${rev.rating_value}</span>
+                ${flagButton}
+              </div>
+            </div>
+            <p class="text-xs text-slate-350">${rev.content}</p>
+            ${repliesHtml}
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function toggleFavoriteLocal() {
+      if (!state.user) {
+        alert('You must sign in to save favorites.');
+        showSection('login');
+        return;
+      }
+      if (!activeRestaurantId) return;
+      const index = state.favorites.indexOf(activeRestaurantId);
+      const r = state.restaurants.find(item => item.id === activeRestaurantId);
+      if (!r) return;
+
+      if (index === -1) {
+        state.favorites.push(activeRestaurantId);
+        addAuditLogLocal('ADD_FAVORITE', 'Restaurant', r.name, `Saved to favorites list`);
+        alert('Restaurant added to your favorites!');
+      } else {
+        state.favorites.splice(index, 1);
+        addAuditLogLocal('REMOVE_FAVORITE', 'Restaurant', r.name, `Removed from favorites list`);
+        alert('Restaurant removed from your favorites.');
+      }
+      viewRestaurantDetails(activeRestaurantId);
+    }
+
+    function submitReviewLocal() {
+      if (!state.user) {
+        alert('You must sign in to submit a review.');
+        showSection('login');
+        return;
+      }
+      if (!activeRestaurantId) return;
+      const r = state.restaurants.find(item => item.id === activeRestaurantId);
+      if (!r) return;
+
+      const ratingVal = parseInt(document.getElementById('review-rating').value);
+      const content = document.getElementById('review-content').value.trim();
+      if (!content) {
+        alert('Please enter your recipe review comment.');
+        return;
+      }
+
+      const newReview = {
+        id: Date.now(),
+        username: state.user.username,
+        first_name: state.user.firstName || 'Anonymous',
+        last_name: state.user.lastName || '',
+        rating_value: ratingVal,
+        content: content,
+        comments: [],
+        flagged: false
+      };
+
+      r.reviews.unshift(newReview);
+      
+      // Re-calculate ratings
+      const totalRating = r.reviews.reduce((sum, rev) => sum + rev.rating_value, 0);
+      r.average_rating = totalRating / r.reviews.length;
+      r.rating_count = r.reviews.length;
+
+      document.getElementById('review-content').value = '';
+      
+      // Refresh details and database views
+      viewRestaurantDetails(activeRestaurantId);
+      populateLandingGrid();
+      filterMapList();
+      updateMapMarkers();
+      
+      addAuditLogLocal('SUBMIT_REVIEW', 'Review', r.name, `Rating: ${ratingVal}★ - comment: "${content.substring(0, 25)}..."`);
+      alert('Review posted successfully!');
+    }
+
+    function flagReviewLocal(restaurantId, reviewId) {
+      if (!state.user) {
+        alert('You must sign in to report content.');
+        showSection('login');
+        return;
+      }
+      const r = state.restaurants.find(item => item.id === restaurantId);
+      if (!r) return;
+      const rev = r.reviews.find(item => item.id === reviewId);
+      if (rev) {
+        rev.flagged = true;
+        addAuditLogLocal('FLAG_REVIEW', 'Review', rev.username, `Review ID ${reviewId} flagged on eatery "${r.name}"`);
+        populateDetailsReviews(r);
+        alert('This review has been reported to the administration team.');
+      }
+    }
+
+    // Populate Culinary CMS stories list
+    function populateStoriesList() {
+      const list = document.getElementById('stories-feed-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      state.stories.forEach(s => {
+        list.innerHTML += `
+          <div onclick="readStoryLocal(${s.id})" class="p-3 bg-slate-900/40 border border-slate-850 rounded-xl cursor-pointer hover:border-brand-500/20 transition">
+            <span class="text-[9px] text-brand-500 font-bold uppercase tracking-wider">${s.municipality_name}</span>
+            <h3 class="font-bold text-xs text-slate-100 mt-1">${s.title}</h3>
+          </div>
+        `;
+      });
+      readStoryLocal(1);
+    }
+
+    function readStoryLocal(id) {
+      const s = state.stories.find(i => i.id === id);
+      if (!s) return;
+      document.getElementById('story-read-title').innerText = s.title;
+      document.getElementById('story-read-meta').innerHTML = `<span>📍 ${s.municipality_name}</span><span>Author: ${s.author_name}</span>`;
+      document.getElementById('story-read-body').innerText = s.content;
+    }
+
+    // Registration Wizard Controller
+    let regCurrentStep = 1;
+    let regSelectedRole = 1; // 1 = Tourist, 2 = Food Owner, 3 = Admin
+
+    function setRegRole(roleId) {
+      regSelectedRole = roleId;
+      document.querySelectorAll('.reg-role-card').forEach(card => {
+        card.classList.remove('border-brand-500', 'bg-brand-950/20');
+        card.classList.add('border-slate-800');
+        const check = card.querySelector('.check-icon');
+        if (check) check.classList.add('hidden');
+      });
+      const selectedCard = document.getElementById(`reg-role-${roleId}`);
+      selectedCard.classList.remove('border-slate-800');
+      selectedCard.classList.add('border-brand-500', 'bg-brand-950/20');
+      const check = selectedCard.querySelector('.check-icon');
+      if (check) check.classList.remove('hidden');
+    }
+
+    function updateRegWizard() {
+      // Hide all panels
+      document.getElementById('reg-panel-1').classList.add('hidden');
+      document.getElementById('reg-panel-2').classList.add('hidden');
+      document.getElementById('reg-panel-3').classList.add('hidden');
+      
+      // Show active panel
+      document.getElementById(`reg-panel-${regCurrentStep}`).classList.remove('hidden');
+      
+      // Update Stepper dots
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`reg-step-dot-${i}`);
+        if (!dot) continue;
+        if (i < regCurrentStep) {
+          dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-brand-500 text-slate-950";
+          dot.innerHTML = "✓";
+        } else if (i === regCurrentStep) {
+          dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-brand-500 text-brand-500 bg-brand-950/40";
+          dot.innerHTML = i;
+        } else {
+          dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-slate-800 text-slate-500 bg-slate-900";
+          dot.innerHTML = i;
+        }
+      }
+      
+      // Render role-specific fields
+      if (regCurrentStep === 3) {
+        document.getElementById('reg-fields-tourist').classList.add('hidden');
+        document.getElementById('reg-fields-owner').classList.add('hidden');
+        document.getElementById('reg-fields-admin').classList.add('hidden');
+        
+        if (regSelectedRole === 1) {
+          document.getElementById('reg-fields-tourist').classList.remove('hidden');
+        } else if (regSelectedRole === 2) {
+          document.getElementById('reg-fields-owner').classList.remove('hidden');
+        } else {
+          document.getElementById('reg-fields-admin').classList.remove('hidden');
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function nextRegStep() {
+      if (regCurrentStep === 1) {
+        regCurrentStep = 2;
+        updateRegWizard();
+      } else if (regCurrentStep === 2) {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const pass = document.getElementById('reg-password').value;
+        const confirm = document.getElementById('reg-confirm-password').value;
+        
+        if (!name || !email || !pass || !confirm) {
+          alert('Please fill out all fields.');
+          return;
+        }
+        if (pass !== confirm) {
+          alert('Passwords do not match.');
+          return;
+        }
+        if (pass.length < 8) {
+          alert('Password must be at least 8 characters.');
+          return;
+        }
+        regCurrentStep = 3;
+        updateRegWizard();
+      }
+    }
+
+    function prevRegStep() {
+      if (regCurrentStep > 1) {
+        regCurrentStep--;
+        updateRegWizard();
+      }
+    }
+
+    function handlePasswordInput() {
+      const val = document.getElementById('reg-password').value;
+      const checks = {
+        length: val.length >= 8,
+        upper: /[A-Z]/.test(val),
+        lower: /[a-z]/.test(val),
+        number: /[0-9]/.test(val),
+        special: /[^A-Za-z0-9]/.test(val)
+      };
+      
+      for (const [key, passed] of Object.entries(checks)) {
+        const el = document.getElementById(`pw-check-${key}`);
+        if (!el) continue;
+        const icon = el.querySelector('.chk-icon');
+        if (passed) {
+          el.classList.remove('text-slate-500');
+          el.classList.add('text-brand-500');
+          if (icon) icon.innerHTML = '✓';
+        } else {
+          el.classList.remove('text-brand-500');
+          el.classList.add('text-slate-500');
+          if (icon) icon.innerHTML = '○';
+        }
+      }
+    }
+
+    function submitRegistration() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      
+      let newUser = {
+        id: Date.now(),
+        username: email.split('@')[0],
+        email: email,
+        first_name: name.split(' ')[0],
+        last_name: name.split(' ').slice(1).join(' ') || 'User',
+        role_name: regSelectedRole === 1 ? 'Tourist' : (regSelectedRole === 2 ? 'Food Business Owner' : 'Admin'),
+        is_active: true
+      };
+      
+      if (regSelectedRole === 1) {
+        newUser.nationality = document.getElementById('reg-nationality').value;
+        newUser.preference = document.getElementById('reg-preference').value;
+        state.users.push(newUser);
+        addAuditLogLocal('REGISTER_TOURIST', 'User', newUser.username, `New account created: ${newUser.first_name} ${newUser.last_name}`);
+        alert('Tourist account registered successfully! Logging you in...');
+        state.user = { username: newUser.username, role: 'Tourist', roleId: 1, firstName: newUser.first_name, lastName: newUser.last_name, nationality: newUser.nationality, preference: newUser.preference };
+        loginAsUserDirectly(state.user);
+      } else if (regSelectedRole === 2) {
+        const bizName = document.getElementById('reg-biz-name').value.trim();
+        const bizAddr = document.getElementById('reg-biz-address').value.trim();
+        const bizDesc = document.getElementById('reg-biz-desc').value.trim();
+        
+        if (!bizName || !bizAddr) {
+          alert('Please fill out the Business Name and Address.');
+          return;
+        }
+        
+        const newRest = {
+          id: Date.now(),
+          name: bizName,
+          address: bizAddr,
+          latitude: 14.2811 + (Math.random() - 0.5) * 0.1,
+          longitude: 120.9168 + (Math.random() - 0.5) * 0.1,
+          average_rating: 0.0,
+          rating_count: 0,
+          primary_image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80',
+          municipality_name: 'Kawit',
+          description: bizDesc || 'Traditional Cavite eatery.',
+          contact_info: '+63 917 000 0000',
+          business_hours: 'Mon-Sun 8:00 AM - 9:00 PM',
+          history_story: 'Founded with a passion for preserving Caviteño food traditions.',
+          owner_id: newUser.id,
+          status: 'pending',
+          menu: [],
+          reviews: []
+        };
+        
+        state.restaurants.push(newRest);
+        state.users.push(newUser);
+        
+        addAuditLogLocal('REGISTER_MERCHANT', 'User', newUser.username, `Registered and submitted listing: "${newRest.name}"`);
+        alert('Business Owner registered and listing submitted for Admin Approval! Logging you in...');
+        state.user = { username: newUser.username, role: 'Food Business Owner', roleId: 2, firstName: newUser.first_name, lastName: newUser.last_name, restaurantId: newRest.id };
+        
+        loginAsUserDirectly(state.user);
+      } else {
+        const code = document.getElementById('reg-admin-code').value;
+        if (code !== 'eatywonders2026') {
+          alert('Invalid admin security access code.');
+          return;
+        }
+        state.users.push(newUser);
+        addAuditLogLocal('REGISTER_ADMIN', 'User', newUser.username, `Admin registration completed`);
+        alert('Administrator account registered! Logging you in...');
+        state.user = { username: newUser.username, role: 'Admin', roleId: 3, firstName: newUser.first_name, lastName: newUser.last_name };
+        loginAsUserDirectly(state.user);
+      }
+    }
+
+    function loginAsUserDirectly(account) {
+      // Update Navbar
+      document.getElementById('auth-guest').classList.add('hidden');
+      document.getElementById('auth-logged').classList.remove('hidden');
+      document.getElementById('nav-dash').classList.remove('hidden');
+      
+      document.getElementById('user-badge-name').innerText = account.firstName;
+      document.getElementById('user-badge-role').innerText = account.role;
+
+      // Reset registration form
+      regCurrentStep = 1;
+      document.getElementById('reg-name').value = '';
+      document.getElementById('reg-email').value = '';
+      document.getElementById('reg-password').value = '';
+      document.getElementById('reg-confirm-password').value = '';
+      if (document.getElementById('reg-biz-name')) document.getElementById('reg-biz-name').value = '';
+      if (document.getElementById('reg-biz-address')) document.getElementById('reg-biz-address').value = '';
+      if (document.getElementById('reg-biz-desc')) document.getElementById('reg-biz-desc').value = '';
+      updateRegWizard();
+
+      // Redirect
+      if (account.roleId === 1) {
+        populateTouristDashboard();
+        showSection('tourist-dashboard');
+      } else if (account.roleId === 2) {
+        populateOwnerDashboard();
+        showSection('owner-dashboard');
+      } else {
+        populateAdminDashboard();
+        showSection('admin-dashboard');
+      }
+    }
+
+    // Auth Flows
+    function handleLoginLocal() {
+      const email = document.getElementById('login-email').value.trim();
+      const captcha = document.getElementById('login-captcha').value;
+      
+      if (Number(captcha) !== 8) {
+        alert('Security captcha incorrect.');
+        return;
+      }
+
+      const users = {
+        admin: { username: 'admin', role: 'Admin', roleId: 3, firstName: 'EatyWonders', lastName: 'Admin' },
+        mang_tomas: { username: 'mang_tomas', role: 'Food Business Owner', roleId: 2, firstName: 'Tomas', lastName: 'Alcantara' },
+        tourist_ph: { username: 'tourist_ph', role: 'Tourist', roleId: 1, firstName: 'Juan', lastName: 'Dela Cruz' }
+      };
+
+      const account = users[email] || users['tourist_ph'];
+      
+      // Ensure the user account status in database is active
+      const dbUser = state.users.find(u => u.username === account.username);
+      if (dbUser && !dbUser.is_active) {
+        alert('Your account has been suspended/banned by administrators.');
+        return;
+      }
+
+      state.user = account;
+
+      // Update Navbar
+      document.getElementById('auth-guest').classList.add('hidden');
+      document.getElementById('auth-logged').classList.remove('hidden');
+      document.getElementById('nav-dash').classList.remove('hidden');
+      
+      document.getElementById('user-badge-name').innerText = account.firstName;
+      document.getElementById('user-badge-role').innerText = account.role;
+
+      addAuditLogLocal('LOGIN', 'User', account.username, `Successful login session`);
+
+      // Populate dashboards
+      if (account.roleId === 1) {
+        populateTouristDashboard();
+        showSection('tourist-dashboard');
+      } else if (account.roleId === 2) {
+        populateOwnerDashboard();
+        showSection('owner-dashboard');
+      } else {
+        populateAdminDashboard();
+        showSection('admin-dashboard');
+      }
+    }
+
+    function handleLogout() {
+      if (state.user) {
+        addAuditLogLocal('LOGOUT', 'User', state.user.username, `Closed session`);
+      }
+      state.user = null;
+      document.getElementById('auth-guest').classList.remove('hidden');
+      document.getElementById('auth-logged').classList.add('hidden');
+      document.getElementById('nav-dash').classList.add('hidden');
+      showSection('landing');
+    }
+
+    function openActiveDashboard() {
+      if (!state.user) return;
+      if (state.user.roleId === 1) {
+        populateTouristDashboard();
+        showSection('tourist-dashboard');
+      } else if (state.user.roleId === 2) {
+        populateOwnerDashboard();
+        showSection('owner-dashboard');
+      } else {
+        populateAdminDashboard();
+        showSection('admin-dashboard');
+      }
+    }
+
+    // Tourist Dashboard Controller
+    let activeTouristTab = 'favs';
+
+    function switchTouristTab(tabId) {
+      activeTouristTab = tabId;
+      document.querySelectorAll('.t-tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`t-panel-${tabId}`).classList.remove('hidden');
+      
+      document.querySelectorAll('[id^="btn-t-tab-"]').forEach(btn => {
+        btn.className = "px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap";
+      });
+      const activeBtn = document.getElementById(`btn-t-tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = "px-4 py-2.5 text-xs font-bold text-brand-500 border-b-2 border-brand-500 transition whitespace-nowrap";
+      }
+      
+      if (tabId === 'favs') {
+        populateTouristFavorites();
+      } else if (tabId === 'reviews') {
+        populateTouristReviews();
+      } else if (tabId === 'photos') {
+        populateTouristPhotos();
+      }
+    }
+
+    function populateTouristDashboard() {
+      if (state.user) {
+        document.getElementById('tourist-profile-name').innerText = `${state.user.firstName || 'Juan'} ${state.user.lastName || 'Dela Cruz'}`;
+        document.getElementById('tourist-profile-email').innerText = state.user.email || 'juan@example.com';
+        document.getElementById('tourist-profile-avatar').innerText = `${(state.user.firstName || 'J').substring(0,1).toUpperCase()}${(state.user.lastName || 'D').substring(0,1).toUpperCase()}`;
+        
+        document.getElementById('t-sett-fname').value = state.user.firstName || 'Juan';
+        document.getElementById('t-sett-lname').value = state.user.lastName || 'Dela Cruz';
+        document.getElementById('t-sett-nation').value = state.user.nationality || 'Filipino';
+        document.getElementById('t-sett-pref').value = state.user.preference || 'Street Food';
+      }
+      
+      switchTouristTab('favs');
+    }
+
+    function populateTouristFavorites() {
+      const favsDiv = document.getElementById('tourist-favs-grid');
+      if (!favsDiv) return;
+      favsDiv.innerHTML = '';
+      let count = 0;
+      
+      state.restaurants.forEach(r => {
+        if (state.favorites.includes(r.id)) {
+          count++;
+          favsDiv.innerHTML += `
+            <div class="glass-card rounded-2xl overflow-hidden border border-slate-800 flex flex-col justify-between h-full">
+              <div class="h-32 w-full bg-slate-900 overflow-hidden relative">
+                <img src="${r.primary_image}" alt="${r.name}" class="w-full h-full object-cover" />
+                <span class="absolute top-2 right-2 px-2 py-0.5 bg-rose-950/80 border border-rose-500/30 text-rose-400 text-[8px] uppercase rounded font-bold cursor-pointer" onclick="event.stopPropagation(); removeFavoriteLocal(${r.id})">Remove</span>
+              </div>
+              <div class="p-4 flex-grow flex flex-col justify-between">
+                <div>
+                  <span class="text-[8px] font-bold text-brand-500 uppercase tracking-widest">${r.municipality_name}</span>
+                  <h4 class="font-bold text-white text-xs mt-0.5">${r.name}</h4>
+                  <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">${r.description}</p>
+                </div>
+                <div class="mt-4 pt-2.5 border-t border-slate-850 flex items-center justify-between text-[10px]">
+                  <span class="text-amber-500">★ ${r.average_rating.toFixed(1)}</span>
+                  <button onclick="viewRestaurantDetails(${r.id})" class="text-brand-500 font-bold hover:underline">Explore profile ➔</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      document.getElementById('tourist-stat-favs').innerText = count;
+      if (count === 0) {
+        favsDiv.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 italic text-xs">No favorites saved yet. Go find some on the Map Explorer!</div>';
+      }
+    }
+
+    function removeFavoriteLocal(id) {
+      state.favorites = state.favorites.filter(favId => favId !== id);
+      const r = state.restaurants.find(item => item.id === id);
+      if (r) {
+        addAuditLogLocal('REMOVE_FAVORITE', 'Restaurant', r.name, `Removed favorite`);
+      }
+      populateTouristFavorites();
+      alert('Restaurant removed from your favorites list.');
+    }
+
+    function populateTouristReviews() {
+      const list = document.getElementById('tourist-reviews-list');
+      if (!list) return;
+      list.innerHTML = '';
+      let count = 0;
+      
+      const currentUsername = state.user ? state.user.username : 'tourist_ph';
+      
+      state.restaurants.forEach(r => {
+        r.reviews.forEach(rev => {
+          if (rev.username === currentUsername) {
+            count++;
+            list.innerHTML += `
+              <div class="glass-card p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <strong class="text-white text-xs block">${r.name}</strong>
+                    <span class="text-[9px] text-slate-500">📍 ${r.municipality_name}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-amber-500 font-bold">★ ${rev.rating_value}</span>
+                    <button onclick="deleteTouristReviewLocal(${r.id}, ${rev.id})" class="p-1 bg-slate-950 border border-slate-800 text-rose-455 hover:bg-rose-950/20 rounded" title="Delete Review">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+                <p class="text-slate-300 leading-relaxed">${rev.content}</p>
+              </div>
+            `;
+          }
+        });
+      });
+      document.getElementById('tourist-stat-reviews').innerText = count;
+      lucide.createIcons();
+      if (count === 0) {
+        list.innerHTML = '<div class="py-8 text-center text-slate-500 italic text-xs">You haven\'t submitted any reviews yet. Explore eateries and share your experience!</div>';
+      }
+    }
+
+    function deleteTouristReviewLocal(restaurantId, reviewId) {
+      const r = state.restaurants.find(item => item.id === restaurantId);
+      if (r) {
+        const rev = r.reviews.find(item => item.id === reviewId);
+        r.reviews = r.reviews.filter(rev => rev.id !== reviewId);
+        
+        // Recalculate average rating
+        if (r.reviews.length > 0) {
+          const totalRating = r.reviews.reduce((sum, v) => sum + v.rating_value, 0);
+          r.average_rating = totalRating / r.reviews.length;
+          r.rating_count = r.reviews.length;
+        } else {
+          r.average_rating = 0.0;
+          r.rating_count = 0;
+        }
+        
+        addAuditLogLocal('DELETE_REVIEW', 'Review', r.name, `Deleted review ID ${reviewId} by tourist`);
+      }
+      populateTouristReviews();
+      populateLandingGrid();
+      filterMapList();
+      updateMapMarkers();
+      alert('Your review has been deleted.');
+    }
+
+    function populateTouristPhotos() {
+      const grid = document.getElementById('tourist-photos-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      let count = state.photos.length;
+      
+      state.photos.forEach(p => {
+        grid.innerHTML += `
+          <div class="glass-card rounded-xl overflow-hidden border border-slate-800 aspect-square relative group">
+            <img src="${p.url}" alt="Food photo" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-end">
+              <p class="text-[9px] text-white font-medium truncate">${p.caption}</p>
+              <button onclick="deleteTouristPhotoLocal(${p.id})" class="text-[8px] text-rose-455 font-bold hover:text-rose-300 mt-1 self-start">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      document.getElementById('tourist-stat-photos').innerText = count;
+      if (count === 0) {
+        grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 italic text-xs">Your food gallery is empty. Upload a photo!</div>';
+      }
+    }
+
+    function uploadTouristPhotoLocal() {
+      const input = document.getElementById('tourist-photo-file');
+      if (!input.files || input.files.length === 0) return;
+      
+      const file = input.files[0];
+      const objectUrl = URL.createObjectURL(file);
+      const newPhoto = {
+        id: Date.now(),
+        url: objectUrl,
+        caption: file.name.replace(/\.[^/.]+$/, "")
+      };
+      
+      state.photos.unshift(newPhoto);
+      addAuditLogLocal('UPLOAD_PHOTO', 'Photo', newPhoto.caption, `Uploaded custom food photo`);
+      populateTouristPhotos();
+      alert('Photo uploaded to your explorer profile!');
+    }
+
+    function deleteTouristPhotoLocal(id) {
+      const p = state.photos.find(item => item.id === id);
+      if (p) {
+        addAuditLogLocal('DELETE_PHOTO', 'Photo', p.caption, `Removed photo`);
+      }
+      state.photos = state.photos.filter(p => p.id !== id);
+      populateTouristPhotos();
+      alert('Photo deleted from your gallery.');
+    }
+
+    function updateTouristSettingsLocal() {
+      const fname = document.getElementById('t-sett-fname').value.trim();
+      const lname = document.getElementById('t-sett-lname').value.trim();
+      const nation = document.getElementById('t-sett-nation').value.trim();
+      const pref = document.getElementById('t-sett-pref').value;
+      
+      if (!fname || !lname) {
+        alert('Please enter your first and last name.');
+        return;
+      }
+      
+      if (state.user) {
+        state.user.firstName = fname;
+        state.user.lastName = lname;
+        state.user.nationality = nation;
+        state.user.preference = pref;
+        
+        // Update user record in list
+        const u = state.users.find(item => item.username === state.user.username);
+        if (u) {
+          u.first_name = fname;
+          u.last_name = lname;
+        }
+        
+        addAuditLogLocal('UPDATE_SETTINGS', 'User', state.user.username, `Updated profile details`);
+
+        document.getElementById('tourist-profile-name').innerText = `${fname} ${lname}`;
+        document.getElementById('tourist-profile-avatar').innerText = `${fname.substring(0,1).toUpperCase()}${lname.substring(0,1).toUpperCase()}`;
+        document.getElementById('user-badge-name').innerText = fname;
+      }
+      alert('Profile information updated successfully!');
+    }
+
+    // Business Owner Dashboard Controller
+    function getActiveMerchantRestaurant() {
+      const currentUser = state.users.find(u => u.username === (state.user ? state.user.username : 'mang_tomas'));
+      const userId = currentUser ? currentUser.id : 2;
+      return state.restaurants.find(r => r.owner_id === userId) || state.restaurants.find(r => r.id === 2);
+    }
+
+    function populateOwnerDashboard() {
+      const r = getActiveMerchantRestaurant();
+      if (!r) return;
+      
+      // Title and status
+      document.getElementById('owner-dashboard-title').innerText = r.name;
+      const statusBadge = document.getElementById('owner-status-badge');
+      statusBadge.innerText = r.status.toUpperCase();
+      if (r.status === 'approved') {
+        statusBadge.className = "px-2 py-0.5 bg-emerald-950 text-brand-500 rounded border border-brand-500/10 font-bold uppercase";
+      } else if (r.status === 'pending') {
+        statusBadge.className = "px-2 py-0.5 bg-amber-950 text-accent-500 rounded border border-accent-500/10 font-bold uppercase";
+      } else {
+        statusBadge.className = "px-2 py-0.5 bg-rose-950 text-rose-455 rounded border border-rose-500/10 font-bold uppercase";
+      }
+
+      // Stats
+      document.getElementById('owner-stat-total-reviews').innerText = r.reviews.length;
+      document.getElementById('owner-stat-rating').innerText = `${r.average_rating.toFixed(1)} ★`;
+
+      // Profile Form Fields
+      document.getElementById('owner-rest-name').value = r.name;
+      document.getElementById('owner-rest-address').value = r.address;
+      document.getElementById('owner-rest-hours').value = r.business_hours || 'Mon-Sun 8:00 AM - 10:00 PM';
+      document.getElementById('owner-rest-phone').value = r.contact_info || '+63 917 123 4567';
+      document.getElementById('owner-rest-lat').value = r.latitude;
+      document.getElementById('owner-rest-lng').value = r.longitude;
+      document.getElementById('owner-rest-desc').value = r.description;
+      document.getElementById('owner-rest-history').value = r.history_story;
+
+      // Populate Menu Table
+      populateOwnerMenuTable(r);
+
+      // Populate Reviews Thread
+      populateOwnerReviewsThread(r);
+    }
+
+    function updateOwnerProfileLocal(e) {
+      if (e) e.preventDefault();
+      const r = getActiveMerchantRestaurant();
+      if (!r) return;
+
+      r.name = document.getElementById('owner-rest-name').value.trim();
+      r.address = document.getElementById('owner-rest-address').value.trim();
+      r.business_hours = document.getElementById('owner-rest-hours').value.trim();
+      r.contact_info = document.getElementById('owner-rest-phone').value.trim();
+      r.latitude = parseFloat(document.getElementById('owner-rest-lat').value);
+      r.longitude = parseFloat(document.getElementById('owner-rest-lng').value);
+      r.description = document.getElementById('owner-rest-desc').value.trim();
+      r.history_story = document.getElementById('owner-rest-history').value.trim();
+
+      document.getElementById('owner-dashboard-title').innerText = r.name;
+      
+      addAuditLogLocal('UPDATE_PROFILE', 'Restaurant', r.name, `Updated coordinates, hours, description`);
+
+      updateMapMarkers();
+      populateLandingGrid();
+      alert('Restaurant details updated successfully listing profile!');
+    }
+
+    function toggleMenuFormLocal() {
+      const form = document.getElementById('owner-menu-form');
+      form.classList.toggle('hidden');
+    }
+
+    function populateOwnerMenuTable(r) {
+      const tbody = document.getElementById('owner-menu-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      
+      if (!r.menu || r.menu.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-500 italic">No dishes in your menu. Add some now!</td></tr>';
+        return;
+      }
+
+      r.menu.forEach((item, index) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-2 text-white font-medium">${item.name}</td>
+            <td class="text-slate-400">${item.category}</td>
+            <td class="text-accent-500 font-bold">₱${item.price.toFixed(2)}</td>
+            <td class="text-right py-1">
+              <button onclick="deleteDishLocal(${index})" class="p-1 border border-slate-800 text-rose-455 hover:bg-rose-950/20 rounded">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function saveDishLocal() {
+      const name = document.getElementById('owner-dish-name').value.trim();
+      const cat = document.getElementById('owner-dish-category').value;
+      const price = parseFloat(document.getElementById('owner-dish-price').value);
+      
+      if (!name || isNaN(price)) {
+        alert('Please fill out all dish fields with valid values.');
+        return;
+      }
+
+      const r = getActiveMerchantRestaurant();
+      if (!r) return;
+      if (!r.menu) r.menu = [];
+
+      r.menu.push({ name: name, category: cat, price: price });
+      
+      document.getElementById('owner-dish-name').value = '';
+      document.getElementById('owner-dish-price').value = '';
+      document.getElementById('owner-menu-form').classList.add('hidden');
+
+      addAuditLogLocal('ADD_DISH', 'Menu', r.name, `Added dish: ${name} (₱${price})`);
+      populateOwnerMenuTable(r);
+      alert('Dish successfully added to your restaurant menu!');
+    }
+
+    function deleteDishLocal(index) {
+      const r = getActiveMerchantRestaurant();
+      if (r && r.menu) {
+        const dishName = r.menu[index].name;
+        r.menu.splice(index, 1);
+        addAuditLogLocal('DELETE_DISH', 'Menu', r.name, `Removed dish: ${dishName}`);
+        populateOwnerMenuTable(r);
+        alert('Dish removed from menu.');
+      }
+    }
+
+    function populateOwnerReviewsThread(r) {
+      const thread = document.getElementById('owner-reviews-thread');
+      if (!thread) return;
+      thread.innerHTML = '';
+
+      if (r.reviews.length === 0) {
+        thread.innerHTML = '<p class="text-slate-500 italic py-2">No customer reviews yet.</p>';
+        return;
+      }
+
+      r.reviews.forEach(rev => {
+        let commentsHtml = '';
+        if (rev.comments && rev.comments.length > 0) {
+          rev.comments.forEach(comment => {
+            commentsHtml += `
+              <div class="mt-2 pl-3 border-l-2 border-brand-500 text-[10px] space-y-0.5 bg-slate-950/40 p-2 rounded">
+                <span class="font-bold text-brand-500">Your Reply:</span>
+                <p class="text-slate-400 italic">${comment.text}</p>
+              </div>
+            `;
+          });
+        }
+
+        thread.innerHTML += `
+          <div class="p-4 bg-slate-950/80 border border-slate-900 rounded-xl space-y-3">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-200">${rev.first_name} (${rev.username})</span>
+              <span class="text-amber-500">★ ${rev.rating_value}</span>
+            </div>
+            <p class="text-xs text-slate-350">${rev.content}</p>
+            ${commentsHtml}
+            
+            <div class="flex gap-2 items-center mt-2 pt-2 border-t border-slate-900/60">
+              <input type="text" id="reply-input-${rev.id}" placeholder="Type your merchant response..." class="flex-grow bg-slate-900 border border-slate-850 rounded p-1.5 text-[10px] text-slate-200 outline-none focus:border-brand-500" />
+              <button onclick="submitReplyLocal(${rev.id})" class="px-3 py-1.5 bg-brand-500 text-slate-950 font-bold rounded text-[9px] hover:bg-brand-600 transition">Reply</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function submitReplyLocal(reviewId) {
+      const input = document.getElementById(`reply-input-${reviewId}`);
+      if (!input || !input.value.trim()) return;
+
+      const r = getActiveMerchantRestaurant();
+      if (!r) return;
+
+      const rev = r.reviews.find(item => item.id === reviewId);
+      if (rev) {
+        if (!rev.comments) rev.comments = [];
+        rev.comments.push({
+          id: Date.now(),
+          username: state.user ? state.user.username : 'mang_tomas',
+          text: input.value.trim()
+        });
+        
+        addAuditLogLocal('MERCHANT_REPLY', 'Review', rev.username, `Replied to review ID ${reviewId} on "${r.name}"`);
+        input.value = '';
+        populateOwnerReviewsThread(r);
+        alert('Reply posted to customer review thread!');
+      }
+    }
+
+    function requestVerificationLocal() {
+      const r = getActiveMerchantRestaurant();
+      if (!r) return;
+
+      r.status = 'pending';
+      const fileInput = document.getElementById('permit-doc-input');
+      const filename = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0].name : 'business_permit.pdf';
+      
+      addAuditLogLocal('SUBMIT_PERMIT', 'Restaurant', r.name, `Submitted permit file for listing approval: "${filename}"`);
+      populateOwnerDashboard();
+      alert('Verification permit uploaded to Admin moderator queue!');
+    }
+
+    // Superuser Admin Dashboard Controller
+    function populateAdminDashboard() {
+      // 1. Stats Counter Cards
+      const totalUsers = state.users.length;
+      const pendingCount = state.restaurants.filter(r => r.status === 'pending').length;
+      const auditCount = state.audits.length;
+      
+      document.getElementById('admin-users-count').innerText = totalUsers;
+      document.getElementById('admin-pending-count').innerText = pendingCount;
+      document.getElementById('admin-audits-count').innerText = auditCount;
+
+      // 2. Business Verification Queue
+      const verifBody = document.getElementById('admin-verif-tbody');
+      if (verifBody) {
+        verifBody.innerHTML = '';
+        const pendingRests = state.restaurants.filter(r => r.status === 'pending');
+        
+        if (pendingRests.length === 0) {
+          verifBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-500 italic">No pending verification requests.</td></tr>`;
+        } else {
+          pendingRests.forEach(r => {
+            const owner = state.users.find(u => u.id === r.owner_id) || { first_name: 'Tomas', last_name: 'Alcantara' };
+            const ownerName = `${owner.first_name} ${owner.last_name}`;
+            verifBody.innerHTML += `
+              <tr class="align-middle border-t border-slate-900">
+                <td class="py-2.5"><strong>${r.name}</strong><br/><span class="text-[10px] text-slate-550">${r.address} (${ownerName})</span></td>
+                <td><span class="text-brand-500 underline font-bold cursor-pointer" onclick="alert('Displaying secure mock upload preview for Mayor Permit document DTI-SEC-991.')">permit_dti.pdf</span></td>
+                <td class="text-right py-2">
+                  <div class="flex justify-end gap-1.5">
+                    <button onclick="approveVerificationLocal(${r.id})" class="p-1 bg-slate-900 hover:bg-brand-950 hover:text-brand-500 border border-slate-850 rounded" title="Approve Listing">
+                      <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="rejectVerificationLocal(${r.id})" class="p-1 bg-slate-900 hover:bg-rose-950/40 hover:text-rose-455 border border-slate-850 rounded" title="Reject Listing">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      }
+
+      // 3. Flagged Content Moderator Table
+      const flaggedBody = document.getElementById('admin-flagged-tbody');
+      if (flaggedBody) {
+        flaggedBody.innerHTML = '';
+        let flaggedReviews = [];
+        state.restaurants.forEach(r => {
+          r.reviews.forEach(rev => {
+            if (rev.flagged) {
+              flaggedReviews.push({ restaurant: r, review: rev });
+            }
+          });
+        });
+
+        if (flaggedReviews.length === 0) {
+          flaggedBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500 italic">No flagged content to moderate.</td></tr>`;
+        } else {
+          flaggedReviews.forEach(fr => {
+            flaggedBody.innerHTML += `
+              <tr class="hover:bg-slate-900/40 border-t border-slate-900 text-xs">
+                <td class="py-2.5"><strong>${fr.restaurant.name}</strong></td>
+                <td>@${fr.review.username}</td>
+                <td class="max-w-xs truncate text-slate-400 font-medium" title="${fr.review.content}">${fr.review.content}</td>
+                <td class="text-right py-2">
+                  <div class="flex justify-end gap-1.5">
+                    <button onclick="dismissFlaggedLocal(${fr.restaurant.id}, ${fr.review.id})" class="px-2 py-1 bg-slate-900 hover:bg-brand-950 hover:text-brand-500 border border-slate-850 rounded text-[9px] font-bold" title="Dismiss Report">
+                      Dismiss
+                    </button>
+                    <button onclick="deleteFlaggedLocal(${fr.restaurant.id}, ${fr.review.id})" class="px-2 py-1 bg-slate-900 hover:bg-rose-950/40 hover:text-rose-400 border border-slate-850 rounded text-[9px] font-bold" title="Delete Review">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+        }
+      }
+
+      // 4. Users Database Table
+      const usersBody = document.getElementById('admin-users-tbody');
+      if (usersBody) {
+        usersBody.innerHTML = '';
+        state.users.forEach(u => {
+          const statusClass = u.is_active 
+            ? 'bg-emerald-950 text-brand-500 border border-brand-500/20' 
+            : 'bg-rose-950 text-rose-455 border border-rose-500/20';
+          const banIcon = u.is_active ? 'ban' : 'unlock';
+          const banTitle = u.is_active ? 'Ban User' : 'Unban User';
+          const rowClass = u.is_active ? '' : 'opacity-60';
+          usersBody.innerHTML += `
+            <tr class="border-t border-slate-900 hover:bg-slate-900/20 ${rowClass}">
+              <td class="py-2.5">@${u.username}</td>
+              <td>${u.email}</td>
+              <td><span class="text-brand-500 font-bold uppercase tracking-wider text-[9px]">${u.role_name}</span></td>
+              <td><span class="px-2 py-0.5 ${statusClass} text-[8px] uppercase rounded font-bold">${u.is_active ? 'active' : 'banned'}</span></td>
+              <td class="text-right py-2">
+                <button onclick="toggleUserStatusLocal(${u.id})" class="p-1 border border-slate-800 text-rose-455 hover:bg-rose-950/20 rounded" title="${banTitle}">
+                  <i data-lucide="${banIcon}" class="w-3.5 h-3.5"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // 5. System Security Audit Logs Table
+      const auditBody = document.getElementById('admin-audit-tbody');
+      if (auditBody) {
+        auditBody.innerHTML = '';
+        
+        if (state.audits.length === 0) {
+          auditBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500 italic">No audit events logged.</td></tr>`;
+        } else {
+          state.audits.forEach(a => {
+            auditBody.innerHTML += `
+              <tr class="hover:bg-slate-900/40 text-[11px] border-t border-slate-900/40">
+                <td class="py-2 text-slate-500 font-mono text-[10px]">${a.timestamp}</td>
+                <td class="font-semibold text-slate-300">@${a.user}</td>
+                <td><span class="px-1.5 py-0.5 bg-slate-950 border border-slate-850 rounded text-brand-500 font-mono text-[9px] uppercase">${a.action}</span></td>
+                <td class="text-slate-400">${a.entityType}</td>
+                <td class="text-slate-500 italic">${a.details || a.entityId}</td>
+              </tr>
+            `;
+          });
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    function approveVerificationLocal(id) {
+      const r = state.restaurants.find(item => item.id === id);
+      if (r) {
+        r.status = 'approved';
+        addAuditLogLocal('APPROVE_RESTAURANT', 'Restaurant', r.name, `Approved listing for owner ID ${r.owner_id}`);
+      }
+      populateAdminDashboard();
+      updateMapMarkers();
+      populateLandingGrid();
+      alert('Establishment approved and plotted live onto the Map Explorer!');
+    }
+
+    function rejectVerificationLocal(id) {
+      const r = state.restaurants.find(item => item.id === id);
+      if (r) {
+        r.status = 'rejected';
+        addAuditLogLocal('REJECT_RESTAURANT', 'Restaurant', r.name, `Rejected listing for owner ID ${r.owner_id}`);
+      }
+      populateAdminDashboard();
+      alert('Establishment listing verification request has been rejected.');
+    }
+
+    function dismissFlaggedLocal(restaurantId, reviewId) {
+      const r = state.restaurants.find(item => item.id === restaurantId);
+      if (!r) return;
+      const rev = r.reviews.find(item => item.id === reviewId);
+      if (rev) {
+        rev.flagged = false;
+        addAuditLogLocal('DISMISS_REPORT', 'Review', rev.username, `Dismissed report for review ID ${reviewId} on "${r.name}"`);
+      }
+      populateAdminDashboard();
+      alert('Report has been dismissed.');
+    }
+
+    function deleteFlaggedLocal(restaurantId, reviewId) {
+      const r = state.restaurants.find(item => item.id === restaurantId);
+      if (!r) return;
+      const rev = r.reviews.find(item => item.id === reviewId);
+      if (rev) {
+        r.reviews = r.reviews.filter(item => item.id !== reviewId);
+        // Recalculate average rating
+        if (r.reviews.length > 0) {
+          const totalRating = r.reviews.reduce((sum, v) => sum + v.rating_value, 0);
+          r.average_rating = totalRating / r.reviews.length;
+          r.rating_count = r.reviews.length;
+        } else {
+          r.average_rating = 0.0;
+          r.rating_count = 0;
+        }
+        
+        addAuditLogLocal('DELETE_REVIEW', 'Review', rev.username, `Deleted reported review ID ${reviewId} on "${r.name}"`);
+      }
+      populateAdminDashboard();
+      populateLandingGrid();
+      filterMapList();
+      updateMapMarkers();
+      alert('Reported review content has been deleted from the database.');
+    }
+
+    function toggleUserStatusLocal(userId) {
+      const u = state.users.find(item => item.id === userId);
+      if (u) {
+        u.is_active = !u.is_active;
+        const statusText = u.is_active ? 'ACTIVATED' : 'BANNED';
+        addAuditLogLocal('TOGGLE_USER_STATUS', 'User', u.username, `Changed status to ${statusText}`);
+        
+        // If current user is banned, logout immediately
+        if (state.user && state.user.username === u.username && !u.is_active) {
+          alert('This user account has been banned. Session will terminate.');
+          handleLogout();
+          return;
+        }
+        
+        alert(`User @${u.username} status has been toggled to ${u.is_active ? 'Active' : 'Banned'}.`);
+      }
+      populateAdminDashboard();
+    }
+
+    function filterMapList() {
+      const text = document.getElementById('map-search').value.toLowerCase();
+      const mun = document.getElementById('map-mun').value;
+      const list = document.getElementById('map-restaurants-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      state.restaurants.forEach(r => {
+        if (r.status !== 'approved') return;
+        if (mun && !r.municipality_name.includes(mun)) return;
+        if (text && !r.name.toLowerCase().includes(text) && !r.description.toLowerCase().includes(text)) return;
+
+        list.innerHTML += `
+          <div onclick="viewRestaurantDetails(${r.id})" class="p-2.5 bg-slate-950 rounded-xl border border-slate-850 hover:border-brand-500/20 cursor-pointer flex justify-between items-center transition">
+            <div>
+              <strong class="text-slate-100 block text-xs">${r.name}</strong>
+              <span class="text-[9px] text-slate-500">${r.municipality_name}</span>
+            </div>
+            <span class="text-[10px] text-amber-500 font-bold">★ ${r.average_rating.toFixed(1)}</span>
+          </div>
+        `;
+      });
+    }
+
+    function triggerLandingSearch() {
+      const q = document.getElementById('landing-search').value;
+      document.getElementById('map-search').value = q;
+      showSection('map');
+      filterMapList();
+    }
+
+    // App Boot
+    window.onload = () => {
+      populateLandingGrid();
+      populateStoriesList();
+      filterMapList();
+      lucide.createIcons();
+      showSection('landing');
+    };
+  </script>
+</body>
+</html>

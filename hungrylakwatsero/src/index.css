@@ -1,0 +1,1493 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   HungryLakwatsero — Green Premium Tourism Design System
+   ========================================================= */
+
+:root {
+  /* LIGHT THEME VARIABLES */
+  --bg-primary-rgb:    244, 255, 246;       /* #F4FFF6 */
+  --bg-secondary-rgb:  232, 245, 233;       /* #E8F5E9 */
+  --bg-card-rgb:       255, 255, 255;       /* White */
+  --bg-navbar-rgb:     255, 255, 255;       /* White */
+  
+  --text-primary-rgb:  16, 61, 36;          /* #103D24 */
+  --text-secondary-rgb: 46, 125, 50;        /* #2E7D32 */
+  --text-muted-rgb:    102, 187, 106;       /* #66BB6A */
+  
+  --border-primary-rgb: 165, 214, 167;      /* #A5D6A7 */
+  --border-secondary-rgb: 200, 230, 201;    /* #C8E6C9 */
+
+  --bg-primary:   rgb(var(--bg-primary-rgb));
+  --bg-secondary: rgb(var(--bg-secondary-rgb));
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-secondary: rgb(var(--text-secondary-rgb));
+  --text-muted: rgb(var(--text-muted-rgb));
+  --border-primary: rgb(var(--border-primary-rgb));
+  --border-secondary: rgb(var(--border-secondary-rgb));
+
+  --glass-bg:     rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(102, 187, 106, 0.30);
+  --glass-navbar: rgba(255, 255, 255, 0.90);
+}
+
+.dark {
+  /* DARK THEME VARIABLES */
+  --bg-primary-rgb:    8, 28, 21;           /* #081C15 */
+  --bg-secondary-rgb:  15, 46, 29;          /* #0F2E1D */
+  --bg-card-rgb:       15, 46, 29;          /* #0F2E1D */
+  --bg-navbar-rgb:     8, 28, 21;           /* #081C15 */
+  
+  --text-primary-rgb:  248, 255, 248;       /* #F8FFF8 */
+  --text-secondary-rgb: 165, 214, 167;      /* #A5D6A7 */
+  --text-muted-rgb:    129, 199, 132;       /* #81C784 */
+  
+  --border-primary-rgb: 46, 125, 50;        /* #2E7D32 */
+  --border-secondary-rgb: 27, 94, 32;       /* #1B5E20 */
+
+  --bg-primary:   rgb(var(--bg-primary-rgb));
+  --bg-secondary: rgb(var(--bg-secondary-rgb));
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-secondary: rgb(var(--text-secondary-rgb));
+  --text-muted: rgb(var(--text-muted-rgb));
+  --border-primary: rgb(var(--border-primary-rgb));
+  --border-secondary: rgb(var(--border-secondary-rgb));
+
+  --glass-bg:     rgba(15, 46, 29, 0.70);
+  --glass-border: rgba(165, 214, 167, 0.20);
+  --glass-navbar: rgba(8, 28, 21, 0.90);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    height: 100%;
+  }
+
+  html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    /* Mobile touch scroll */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #root {
+    background-color: var(--bg-primary);
+    min-height: 100dvh;
+    min-height: 100vh;
+    /* Never trap scroll at root level */
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Playfair Display', Georgia, serif;
+    line-height: 1.2;
+  }
+
+  /* Focus rings */
+  :focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+  }
+
+  /* Prevent horizontal overflow from any element */
+  img, video, iframe, table {
+    max-width: 100%;
+  }
+
+  /* Smooth mobile scrolling in all scroll containers */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+}
+
+/* =========================================================
+   LAYOUT & SCROLL UTILITIES
+   =========================================================
+   These solve the core scrolling architecture for dashboards
+   and map pages without needing full page rewrites.
+   ========================================================= */
+
+/* Dashboard shell — flex row; page scroll stays on document (no trapped scroll) */
+.dashboard-layout {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Dashboard sidebar — sticky internal scroll for admin panels */
+.dashboard-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: calc(100dvh - 5rem);
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16,185,129,0.2) transparent;
+}
+
+/* Dashboard main — grows with content; document handles vertical scroll */
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Standard page wrapper for sidebar-linked routes */
+.page-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding: 1rem 1rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .page-content {
+    padding: 1.5rem 2rem 2.5rem;
+  }
+}
+
+/* Map explorer layout — fills remaining viewport below navbar */
+.map-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 64px);
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+/* Map two-panel container */
+.map-panels {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Map left panel (filters + list) */
+.map-list-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Map list scroll area */
+.map-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================================
+   LEAFLET MAP — TOUCH / GESTURE FIX
+   Prevents the map from stealing page-scroll gestures on
+   mobile. The map handles its own pan via pointer events.
+   ========================================================= */
+.leaflet-container {
+  touch-action: none;          /* Leaflet manages its own gestures */
+}
+
+/* But allow vertical scroll when user hasn't started a pan */
+.leaflet-grab {
+  cursor: grab;
+}
+
+/* =========================================================
+   MODAL / DRAWER OVERLAY
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(6, 15, 9, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;             /* Modal itself can scroll if too tall */
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100dvh - 2rem);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  border-radius: 1.5rem;
+  background: rgba(6, 15, 9, 0.97);
+  border: 1px solid rgba(21, 43, 28, 0.8);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(16,185,129,0.08);
+}
+
+/* Body scroll lock — applied via JS when modal is open */
+body.modal-open {
+  overflow: hidden;
+  /* Prevent layout shift from scrollbar disappearing */
+  padding-right: var(--scrollbar-width, 0);
+}
+
+/* =========================================================
+   RESPONSIVE MOBILE PADDING
+   Bottom safe area for mobile bottom nav (h-16 = 64px)
+   ========================================================= */
+.mobile-content-pad {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  .mobile-content-pad { padding-bottom: 0; }
+}
+
+/* Horizontal scroll container (for filter pills, story circles, etc.) */
+.scroll-x {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 0.5rem;
+  padding-bottom: 2px;         /* Prevent clipping of drop shadows */
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+/* =========================================================
+   UTILITIES LAYER
+   ========================================================= */
+@layer utilities {
+
+  /* ---- Glass Cards ---- */
+
+  .glass-dark {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-green {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-cream {
+    background: rgba(250, 247, 242, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(212, 168, 83, 0.15);
+  }
+
+  /* ---- Text Gradients ---- */
+  .text-gradient-green {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 40%, #d4a853 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ---- Gradient Backgrounds ---- */
+  .bg-hero-forest {
+    background: linear-gradient(160deg, #030a05 0%, #052e16 25%, #0d2d1e 55%, #14532d 80%, #166534 100%);
+  }
+
+  .bg-section-green {
+    background: linear-gradient(180deg, #060f09 0%, #0a1f0f 100%);
+  }
+
+  .bg-card-green {
+    background: linear-gradient(135deg, rgba(21, 128, 61, 0.08) 0%, rgba(5, 150, 105, 0.04) 100%);
+  }
+
+  /* ---- Glow Effects ---- */
+  .glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  }
+
+  .glow-green-sm {
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(212, 168, 83, 0.35);
+  }
+
+  /* ---- Premium Buttons ---- */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm
+           bg-emerald-500 hover:bg-emerald-400 text-white
+           shadow-leaf hover:shadow-leaf-lg
+           transform hover:-translate-y-0.5
+           transition-all duration-200 cursor-pointer;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 8px 32px rgba(16,185,129,0.5);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm
+           glass-green text-emerald-300 border border-emerald-500/30
+           hover:bg-emerald-950/60 hover:border-emerald-400/50
+           transform hover:-translate-y-0.5
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm
+           bg-gradient-to-r from-gold-500 to-gold-600 text-white
+           shadow-gold hover:from-gold-400 hover:to-gold-500
+           transform hover:-translate-y-0.5
+           transition-all duration-200 cursor-pointer;
+  }
+
+  /* ---- Form Inputs ---- */
+  .input-green {
+    @apply w-full bg-secondary border border-primary/50 rounded-xl px-4 py-3
+           text-primary placeholder-muted text-sm
+           focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30
+           transition-all duration-200;
+  }
+
+  .input-label {
+    @apply block text-xs font-semibold text-sage-300 mb-1.5 uppercase tracking-wider;
+  }
+
+  /* ---- Cards ---- */
+  .card-restaurant {
+    @apply bg-card rounded-3xl overflow-hidden border border-primary/40
+           hover:border-emerald-500/30 hover:shadow-leaf-lg
+           hover:-translate-y-1.5 transition-all duration-300;
+  }
+
+  .card-story {
+    @apply bg-card rounded-3xl overflow-hidden border border-primary/40
+           hover:border-gold-500/30 hover:shadow-gold
+           hover:-translate-y-1 transition-all duration-300;
+  }
+
+  /* ---- Badges ---- */
+  .badge-green {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
+           bg-emerald-950/60 text-emerald-400 border border-emerald-500/25;
+  }
+
+  .badge-gold {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
+           bg-gold-950/60 text-gold-400 border border-gold-500/25;
+  }
+
+  .badge-sage {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold
+           bg-sage-900/60 text-sage-300 border border-sage-600/25;
+  }
+
+  /* ---- Section Headers ---- */
+  .section-label {
+    @apply text-emerald-400 text-xs font-extrabold uppercase tracking-widest;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-cream-100 mt-2;
+  }
+
+  .section-subtitle {
+    @apply text-sage-400 text-sm mt-3 leading-relaxed;
+  }
+
+  /* ---- Shimmer Loading ---- */
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .skeleton {
+    @apply bg-dark-900/80 rounded-xl animate-pulse;
+  }
+
+  /* ---- Dividers ---- */
+  .divider-green {
+    @apply border-t border-primary/30;
+  }
+
+  /* ---- Overlay ---- */
+  .overlay-dark {
+    background: linear-gradient(180deg, rgba(6, 15, 9, 0) 0%, rgba(6, 15, 9, 0.7) 60%, rgba(6, 15, 9, 0.95) 100%);
+  }
+
+  .overlay-green {
+    background: linear-gradient(180deg, rgba(5, 46, 22, 0) 0%, rgba(5, 46, 22, 0.8) 100%);
+  }
+}
+
+/* =========================================================
+   CUSTOM SCROLLBAR
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--bg-secondary-rgb));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-primary-rgb));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+/* =========================================================
+   LEAFLET MAP — GREEN THEME
+   ========================================================= */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1.25rem;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  background-color: #0a1f0f !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(6, 15, 9, 0.95) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  color: #e8f0e9 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 220px;
+}
+
+.leaflet-popup-tip-container {
+  display: none;
+}
+
+.leaflet-popup-close-button {
+  color: #6b9e7e !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-size: 18px !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #10b981 !important;
+}
+
+.leaflet-bar {
+  border: 1px solid rgba(34, 197, 94, 0.15) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+.leaflet-bar a {
+  background-color: rgba(6, 15, 9, 0.9) !important;
+  color: #6ee7b7 !important;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.1) !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+}
+.leaflet-bar a:hover {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(6, 15, 9, 0.8) !important;
+  color: #578d72 !important;
+  border-top-left-radius: 8px;
+}
+.leaflet-control-attribution a {
+  color: #10b981 !important;
+}
+
+/* Custom Map Markers */
+.custom-marker {
+  background: none !important;
+  border: none !important;
+}
+.map-pin {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3px solid rgba(52, 211, 153, 0.4);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.map-pin:hover {
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.6);
+  transform: rotate(-45deg) scale(1.15);
+}
+.map-pin-inner {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* =========================================================
+   HERO PARTICLE / FLOATING LEAVES
+   ========================================================= */
+.leaf-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* =========================================================
+   MUNICIPAL FILTER TABS
+   ========================================================= */
+.muni-tab {
+  @apply flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl cursor-pointer
+         text-xs font-bold text-sage-400 border border-transparent
+         hover:bg-forest-900/60 hover:text-emerald-400
+         transition-all duration-200 shrink-0;
+}
+.muni-tab.active {
+  @apply bg-emerald-950/60 text-emerald-300 border-emerald-500/30 shadow-leaf;
+}
+
+/* =========================================================
+   MOBILE-FIRST RESPONSIVE HELPERS
+   ========================================================= */
+@media (max-width: 640px) {
+  .section-title {
+    font-size: 1.75rem;
+  }
+  .hero-title {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+}
+
+/* =========================================================
+   DASHBOARD SIDEBAR
+   ========================================================= */
+.sidebar-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
+         text-sage-400 hover:text-emerald-300 hover:bg-forest-900/50
+         transition-all duration-200 cursor-pointer;
+}
+.sidebar-item.active {
+  @apply text-emerald-300 bg-emerald-950/60 border border-emerald-500/20;
+}
+
+/* =========================================================
+   STAR RATING
+   ========================================================= */
+.star-btn {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.star-btn:hover {
+  transform: scale(1.2);
+}
+
+/* =========================================================
+   FORM STEPS INDICATOR
+   ========================================================= */
+.step-dot {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+         border-2 border-primary text-secondary bg-background
+         transition-all duration-300;
+}
+.step-dot.active {
+  @apply border-emerald-500 text-emerald-400 bg-emerald-950/60;
+}
+.step-dot.done {
+  @apply border-emerald-500 text-white bg-emerald-600;
+}
+
+/* =========================================================
+   REVIEW CARDS
+   ========================================================= */
+.review-card {
+  @apply bg-card rounded-2xl p-5 border border-primary/40
+         hover:border-emerald-500/20 transition-all duration-200;
+}
+
+/* =========================================================
+   TABLE STYLES (ADMIN)
+   ========================================================= */
+.admin-table {
+  @apply w-full text-sm;
+}
+.admin-table th {
+  @apply text-left px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider
+         border-b border-primary/50;
+}
+.admin-table td {
+  @apply px-4 py-3 text-primary border-b border-primary/30;
+}
+.admin-table tr:hover td {
+  @apply bg-secondary/30;
+}
+
+/* =========================================================
+   MOBILE BOTTOM NAV
+   ========================================================= */
+.mobile-nav-item {
+  @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl
+         text-sage-500 text-[10px] font-semibold
+         transition-all duration-200 cursor-pointer;
+}
+.mobile-nav-item.active {
+  @apply text-emerald-400;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Stagger animation delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* Image lazy load fade */
+.img-lazy {
+  transition: opacity 0.4s ease;
+}
+.img-lazy.loaded {
+  opacity: 1;
+}
+
+/* =========================================================
+   SCROLLBAR HIDE UTILITY
+   ========================================================= */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* =========================================================
+   DARK MODE CONTRAST FIXES
+   ========================================================= */
+/* Fix input visibility in both themes */
+
+
+/* =========================================================
+   ROUNDED 4XL + 5XL
+   ========================================================= */
+.rounded-4xl {
+  border-radius: 2rem;
+}
+.rounded-5xl {
+  border-radius: 2.5rem;
+}
+
+/* =========================================================
+   BUTTON ROSE (for destructive actions)
+   ========================================================= */
+.btn-rose {
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm
+         bg-rose-600 hover:bg-rose-500 text-white
+         shadow-lg hover:shadow-rose-500/25
+         transform hover:-translate-y-0.5
+         transition-all duration-200 cursor-pointer;
+}
+
+/* =========================================================
+   GLASS GOLD
+   ========================================================= */
+.glass-gold {
+  background: rgba(31, 22, 2, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 168, 83, 0.15);
+}
+
+/* =========================================================
+   ANIMATION: Fade Up (for page transitions)
+   ========================================================= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* =========================================================
+   FULL-WIDTH SAFE PADDING (bottom nav)
+   ========================================================= */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* =========================================================
+   FONT DISPLAY CLASS
+   ========================================================= */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.font-body {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+/* =========================================================
+   SHADOW TOKENS
+   ========================================================= */
+.shadow-leaf {
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.18), 0 2px 8px rgba(0,0,0,0.2);
+}
+.shadow-leaf-lg {
+  box-shadow: 0 8px 40px rgba(16, 185, 129, 0.3), 0 4px 16px rgba(0,0,0,0.3);
+}
+.shadow-gold {
+  box-shadow: 0 4px 20px rgba(212, 168, 83, 0.25), 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* =========================================================
+   ADDITIONAL UTILITIES
+   ========================================================= */
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Subtle page enter — avoids layout jump from transform on every child */
+.page-enter {
+  animation: fadeInPage 0.25s ease-out forwards;
+}
+@keyframes fadeInPage {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Mobile bottom nav safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+}
+
+/* Responsive table overflow wrapper */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 1rem;
+}
+
+
+/* =========================================================
+   RATING BUBBLE MARKERS (Airbnb-style map markers)
+   ========================================================= */
+.custom-rating-bubble-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.rating-bubble {
+  background-color: #061a0d;
+  color: #e8f0e9;
+  border: 1.5px solid #10b981;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.rating-bubble:hover {
+  transform: scale(1.08);
+  background-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+.rating-bubble.selected {
+  background-color: #d4a853;
+  color: #061a0d;
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.65);
+  transform: scale(1.12);
+}
+
+/* =========================================================
+   ADDITIONAL THEME POLISH
+   ========================================================= */
+.input-green, .btn-primary, .btn-secondary, .glass-dark, .sidebar-item, .mobile-nav-item, .muni-tab {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Admin table extra fix */
+.admin-table th { color: #82aa96; border-bottom-color: rgba(21, 43, 28, 0.60); }
+.admin-table td { color: #cfd0d5; border-bottom-color: rgba(14, 26, 13, 0.50); }
+.admin-table tr:hover td { background-color: rgba(6, 15, 9, 0.30); }
+
+
+/* =========================================================
+   CINEMATIC PREMIUM UPGRADE — Hungry Lakwatsero v2
+   Luxury food & travel aesthetic with full animation support
+   ========================================================= */
+
+/* =========================================================
+   NEW KEYFRAMES — Cinematic Motion Library
+   ========================================================= */
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(40px); clip-path: inset(100% 0 0 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0% 0 0 0); }
+}
+
+@keyframes revealFade {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-16px) rotate(2deg); }
+  66% { transform: translateY(-8px) rotate(-1deg); }
+}
+
+@keyframes floatFast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.3), 0 0 40px rgba(16,185,129,0.1); }
+  50% { box-shadow: 0 0 40px rgba(16,185,129,0.6), 0 0 80px rgba(16,185,129,0.2); }
+}
+
+@keyframes glowPulseGold {
+  0%, 100% { box-shadow: 0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(245,158,11,0.1); }
+  50% { box-shadow: 0 0 40px rgba(245,158,11,0.5), 0 0 80px rgba(245,158,11,0.2); }
+}
+
+@keyframes shimmerGold {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(16,185,129,0.3); }
+  50% { border-color: rgba(16,185,129,0.8); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  25% { transform: translate(20px, -30px) scale(1.1); opacity: 0.6; }
+  50% { transform: translate(-10px, -20px) scale(0.95); opacity: 0.5; }
+  75% { transform: translate(15px, 10px) scale(1.05); opacity: 0.7; }
+}
+
+@keyframes textShine {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rotateIn {
+  from { opacity: 0; transform: rotate(-5deg) scale(0.9); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+/* =========================================================
+   NEW UTILITY CLASSES — Cinematic Premium System
+   ========================================================= */
+
+/* ---- Premium Animated Text Gradients ---- */
+.text-gradient-cinematic {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 30%, #f59e0b 60%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: textShine 4s linear infinite;
+}
+
+.text-gradient-gold-shine {
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 30%, #fcd34d 50%, #f59e0b 70%, #b45309 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShine 3s linear infinite;
+}
+
+/* ---- Premium Animation Helpers ---- */
+.animate-float-slow { animation: floatSlow 6s ease-in-out infinite; }
+.animate-float-fast { animation: floatFast 3s ease-in-out infinite; }
+.animate-glow-pulse { animation: glowPulse 2.5s ease-in-out infinite; }
+.animate-glow-gold  { animation: glowPulseGold 2.5s ease-in-out infinite; }
+.animate-reveal-up  { animation: revealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-reveal-fade { animation: revealFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-gradient-shift { background-size: 400% 400%; animation: gradientShift 8s ease infinite; }
+.animate-shimmer-gold {
+  background: linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmerGold 2s linear infinite;
+}
+.animate-border-glow { animation: borderGlow 2s ease-in-out infinite; }
+.animate-marquee { animation: marquee 25s linear infinite; }
+.animate-orb { animation: orbFloat 8s ease-in-out infinite; }
+.animate-ripple { animation: ripple 1s ease-out forwards; }
+.animate-slide-right { animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide-left  { animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-zoom-in { animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* ---- Glassmorphism Upgrades ---- */
+.glass-ultra {
+  background: rgba(8, 28, 21, 0.7);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(52, 211, 153, 0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.glass-premium {
+  background: rgba(15, 46, 29, 0.6);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.glass-navbar-premium {
+  background: rgba(6, 15, 9, 0.85);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.12);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.2);
+}
+
+.glass-card-premium {
+  background: linear-gradient(135deg, rgba(15,46,29,0.5) 0%, rgba(8,28,21,0.7) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(52, 211, 153, 0.1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* ---- Premium Buttons ---- */
+.btn-cinematic {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 32px rgba(16,185,129,0.35), 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn-cinematic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: inherit;
+}
+
+.btn-cinematic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(16,185,129,0.5), 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.btn-cinematic:hover::before { opacity: 1; }
+.btn-cinematic:active { transform: translateY(-1px); }
+
+.btn-cinematic-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #0a0a0a;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 8px 32px rgba(245,158,11,0.4), 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn-cinematic-gold:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(245,158,11,0.55), 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.btn-ghost-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #6ee7b7;
+  background: transparent;
+  border: 1.5px solid rgba(52, 211, 153, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(8px);
+}
+
+.btn-ghost-premium:hover {
+  border-color: rgba(52, 211, 153, 0.8);
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 24px rgba(16,185,129,0.2);
+  transform: translateY(-2px);
+}
+
+/* ---- Premium Card Effects ---- */
+.card-hover-lift {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4), 0 8px 24px rgba(16,185,129,0.1);
+}
+
+.card-glow-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-glow-hover:hover {
+  box-shadow: 0 0 0 1px rgba(52,211,153,0.3), 0 24px 64px rgba(0,0,0,0.4), 0 0 40px rgba(16,185,129,0.08);
+}
+
+/* ---- Cinematic Overlays ---- */
+.overlay-cinematic {
+  background: linear-gradient(180deg,
+    rgba(6,15,9,0) 0%,
+    rgba(6,15,9,0.3) 40%,
+    rgba(6,15,9,0.8) 75%,
+    rgba(6,15,9,0.97) 100%);
+}
+
+.overlay-hero {
+  background: linear-gradient(
+    135deg,
+    rgba(6,15,9,0.92) 0%,
+    rgba(6,15,9,0.75) 40%,
+    rgba(6,15,9,0.3) 70%,
+    rgba(6,15,9,0.5) 100%
+  );
+}
+
+.grain-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+/* ---- Glow Effects ---- */
+.glow-emerald-lg {
+  box-shadow: 0 0 60px rgba(16,185,129,0.25), 0 0 120px rgba(16,185,129,0.1);
+}
+
+.glow-gold-lg {
+  box-shadow: 0 0 60px rgba(245,158,11,0.25), 0 0 120px rgba(245,158,11,0.1);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 20px rgba(16,185,129,0.5), 0 0 40px rgba(16,185,129,0.25);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 20px rgba(245,158,11,0.5), 0 0 40px rgba(245,158,11,0.25);
+}
+
+/* ---- Hero Orb Backgrounds ---- */
+.hero-orb-green {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.hero-orb-gold {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.hero-orb-orange {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+/* ---- Premium Input Styles ---- */
+.input-premium {
+  width: 100%;
+  background: rgba(8, 28, 21, 0.6);
+  border: 1.5px solid rgba(52, 211, 153, 0.15);
+  border-radius: 14px;
+  padding: 0.875rem 1.25rem;
+  color: #f0fdf4;
+  font-size: 0.9rem;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.input-premium::placeholder { color: rgba(165, 214, 167, 0.4); }
+
+.input-premium:focus {
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 4px 16px rgba(0,0,0,0.15);
+  background: rgba(8, 28, 21, 0.8);
+}
+
+/* ---- Section Dividers ---- */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(52,211,153,0.3) 50%, transparent 100%);
+  border: none;
+  margin: 0;
+}
+
+/* ---- Scroll Snap for Mobile Carousels ---- */
+.snap-container {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ---- Swiper Custom Styles ---- */
+.swiper-pagination-bullet {
+  background: rgba(52, 211, 153, 0.4) !important;
+  opacity: 1 !important;
+  width: 6px !important;
+  height: 6px !important;
+  transition: all 0.3s !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #10b981 !important;
+  width: 24px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 8px rgba(16,185,129,0.5) !important;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: #10b981 !important;
+  background: rgba(8, 28, 21, 0.8) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s !important;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: rgba(16, 185, 129, 0.2) !important;
+  box-shadow: 0 0 16px rgba(16,185,129,0.3) !important;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+/* ---- Premium Loading Shimmer ---- */
+.shimmer-premium {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 46, 29, 0.8) 0%,
+    rgba(52, 211, 153, 0.05) 40%,
+    rgba(15, 46, 29, 0.8) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ---- Navbar Scroll States ---- */
+.navbar-transparent {
+  background: transparent !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.navbar-scrolled {
+  background: rgba(6, 15, 9, 0.92) !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(52, 211, 153, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+}
+
+/* ---- Animation Stagger Delays (Extended) ---- */
+.delay-50   { animation-delay: 50ms; }
+.delay-150  { animation-delay: 150ms; }
+.delay-250  { animation-delay: 250ms; }
+.delay-600  { animation-delay: 600ms; }
+.delay-800  { animation-delay: 800ms; }
+.delay-1000 { animation-delay: 1000ms; }
+.delay-1200 { animation-delay: 1200ms; }
+
+/* ---- Premium Hover Underline for Nav Links ---- */
+.nav-link-premium {
+  position: relative;
+  transition: color 0.3s;
+}
+
+.nav-link-premium::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 1px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px rgba(16,185,129,0.5);
+}
+
+.nav-link-premium:hover::after,
+.nav-link-premium.active::after {
+  width: 100%;
+}
+
+/* ---- Mobile Drawer Backdrop ---- */
+.drawer-backdrop {
+  backdrop-filter: blur(12px);
+  background: rgba(6, 15, 9, 0.7);
+}
+
+/* ---- Premium Card Image Zoom ---- */
+.img-zoom-wrapper { overflow: hidden; }
+
+.img-zoom-wrapper img {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.img-zoom-wrapper:hover img {
+  transform: scale(1.08);
+}
+
+/* ---- Premium Hero Showcase Cards ---- */
+.showcase-card {
+  background: rgba(8, 28, 21, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 1.5rem;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: absolute;
+}
+.showcase-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 30px rgba(16,185,129,0.15);
+  z-index: 20;
+}
+.showcase-connection-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 3s ease forwards;
+}
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ---- Section Reveal Transition Classes ---- */
+.section-hidden {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Page Transition Wrapper ---- */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+/* ---- Focus Visible (Keyboard Navigation) ---- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+}
+a:focus-visible {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6);
+  border-radius: 0.375rem;
+}
+button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6);
+  border-radius: 0.5rem;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

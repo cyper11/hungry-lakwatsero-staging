@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eaty Wonders | Cavite Culinary Tourism (Modular Static Project)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fbf7',
+              100: '#dcf6ed',
+              500: '#10b981',
+              600: '#059669',
+              950: '#022c22',
+            },
+            accent: {
+              500: '#f59e0b',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom External Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- NAVBAR -->
+  <nav class="glass-card sticky top-0 z-[2000] w-full border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center">
+          <a href="#" onclick="showSection('landing')" class="flex items-center gap-2">
+            <span class="text-2xl">🍜</span>
+            <span class="font-display font-extrabold text-xl tracking-tight text-gradient">EATY WONDERS</span>
+          </a>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="flex items-center space-x-6">
+          <button onclick="showSection('map')" class="text-slate-300 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="map" class="w-4 h-4"></i>
+            <span>Map Explorer</span>
+          </button>
+          <button onclick="showSection('stories')" class="text-slate-300 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Culinary Stories</span>
+          </button>
+          <button id="nav-dash" onclick="openActiveDashboard()" class="hidden text-slate-300 hover:text-white px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            <span>My Dashboard</span>
+          </button>
+        </div>
+
+        <!-- User actions -->
+        <div class="flex items-center gap-3">
+          <div id="auth-guest" class="flex gap-2">
+            <button onclick="showSection('login')" class="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 transition">Sign In</button>
+            <button onclick="showSection('register')" class="text-xs font-bold text-slate-950 bg-gradient-to-r from-brand-500 to-emerald-400 px-4 py-2 rounded-lg transition hover:brightness-110">Register</button>
+          </div>
+          <div id="auth-logged" class="hidden flex items-center gap-3">
+            <div class="flex flex-col items-end">
+              <span id="user-badge-name" class="text-xs font-bold text-slate-100">User</span>
+              <span id="user-badge-role" class="text-[9px] uppercase font-bold text-brand-500 tracking-wider">Role</span>
+            </div>
+            <button onclick="handleLogout()" class="p-2 bg-slate-900 border border-slate-800 text-rose-455 hover:bg-rose-950/20 rounded-lg transition" title="Logout">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- SECTIONS CONTAINER -->
+  <main class="flex-grow relative">
+
+    <!-- 1. LANDING PAGE -->
+    <section id="sec-landing" class="section-panel py-16 px-4 max-w-7xl mx-auto space-y-16 animate-fade-in">
+      <div class="text-center max-w-3xl mx-auto space-y-6 pt-10">
+        <span class="px-3 py-1 bg-brand-950/80 border border-brand-500/20 text-brand-500 text-[10px] uppercase font-extrabold tracking-widest rounded-full">
+          🇵🇭 Cavite Gastronomy Heritage
+        </span>
+        <h1 class="font-display font-extrabold text-4xl md:text-6xl text-white leading-tight">
+          Discover the Hidden Flavors of <span class="text-gradient">Cavite</span>
+        </h1>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Embark on a culinary tourism experience. Locate premium bulalo houses, traditional kalamay kitchens, and historic coffee shops across Cavite's towns.
+        </p>
+
+        <!-- Search Form -->
+        <div class="glass-card p-2 rounded-2xl border border-slate-800 max-w-2xl mx-auto flex flex-col sm:flex-row gap-2">
+          <input id="landing-search" type="text" placeholder="Search traditional dishes, restaurants..." class="bg-transparent border-none outline-none w-full px-3 py-2.5 text-xs text-slate-200" />
+          <button onclick="triggerLandingSearch()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition shrink-0">Explore Map</button>
+        </div>
+      </div>
+
+      <!-- Quick Statistics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">6</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Municipalities</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">4</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Eateries Plotted</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">242</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Explorer Reviews</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center space-y-1">
+          <span class="text-2xl font-extrabold text-white">3</span>
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Heritage Stories</p>
+        </div>
+      </div>
+
+      <!-- Featured Grid -->
+      <div class="space-y-6">
+        <h2 class="font-display font-extrabold text-2xl text-white">Featured Heritage Eateries</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="landing-restaurant-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MAP EXPLORER PAGE -->
+    <section id="sec-map" class="section-panel hidden flex flex-col lg:flex-row h-[calc(100vh-64px)] w-full overflow-hidden">
+      <!-- Left sidebar -->
+      <div class="w-full lg:w-96 bg-slate-900 border-r border-slate-800 flex flex-col h-2/5 lg:h-full shrink-0">
+        <div class="p-4 border-b border-slate-800 space-y-3">
+          <h2 class="font-display font-bold text-sm text-white flex items-center gap-1.5">
+            <i data-lucide="filter" class="w-4 h-4 text-brand-500"></i>
+            <span>Interactive Map Explorer</span>
+          </h2>
+          <div class="space-y-2 text-xs">
+            <input id="map-search" type="text" oninput="filterMapList()" placeholder="Search dishes, tags..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+            <select id="map-mun" onchange="filterMapList()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-350">
+              <option value="">All Municipalities</option>
+              <option value="Tagaytay">Tagaytay City</option>
+              <option value="Kawit">Kawit</option>
+              <option value="Silang">Silang</option>
+              <option value="Indang">Indang</option>
+              <option value="Imus">Imus City</option>
+              <option value="Bacoor">Bacoor City</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="map-restaurants-list" class="flex-grow overflow-y-auto p-2 space-y-2">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Sticky detail preview -->
+        <div id="map-selected-card" class="hidden p-4 bg-slate-950 border-t border-slate-850 space-y-3">
+          <div>
+            <h4 id="selected-card-name" class="font-bold text-xs text-brand-500">Selected Restaurant</h4>
+            <p id="selected-card-address" class="text-[10px] text-slate-500 mt-0.5">Address</p>
+          </div>
+          <button id="selected-card-link" class="w-full py-2 bg-brand-500 text-slate-950 font-bold text-[10px] rounded-lg text-center hover:bg-brand-600 transition">View Full Profile</button>
+        </div>
+      </div>
+
+      <!-- Map box -->
+      <div class="flex-grow h-3/5 lg:h-full relative bg-slate-950">
+        <div id="leaflet-map-element" class="w-full h-full" style="min-height: 350px;"></div>
+        <div class="absolute top-4 left-4 z-[1000] bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800 text-[10px] text-brand-500 font-bold">
+          Cavite Coverage Only
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RESTAURANT DETAILS PAGE -->
+    <section id="sec-restaurant-detail" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <button onclick="showSection('map')" class="text-xs text-slate-350 hover:text-brand-500 transition font-bold flex items-center gap-1">⬅ Back to Explorer</button>
+
+      <!-- Header Banner -->
+      <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 flex items-end p-6">
+        <img id="detail-cover" src="" alt="cover" class="absolute inset-0 w-full h-full object-cover opacity-60" />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+        <div class="z-10 space-y-2">
+          <span id="detail-mun" class="px-2.5 py-1 bg-brand-950 text-brand-500 text-[9px] uppercase font-bold rounded border border-brand-500/20">Municipality</span>
+          <h1 id="detail-name" class="font-display font-extrabold text-2xl md:text-4xl text-white">Eatery Name</h1>
+          <p id="detail-address" class="text-xs text-slate-350 flex items-center gap-1">📍 Address</p>
+        </div>
+      </div>
+
+      <!-- Grid splits -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Left (2/3) - story, menu -->
+        <div class="md:col-span-2 space-y-8">
+          <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-3">
+            <h2 class="font-display font-bold text-lg text-white">Culinary Story & History</h2>
+            <p id="detail-description" class="text-xs text-slate-300 leading-relaxed">Description</p>
+            <p id="detail-history" class="text-xs text-slate-450 italic leading-relaxed pt-2">History story</p>
+          </div>
+
+          <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+            <h2 class="font-display font-bold text-lg text-white">Traditional Recipe Menu</h2>
+            <div id="detail-menu-items" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right (1/3) - info, reviews -->
+        <div class="space-y-8">
+          <div class="glass-card p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+            <h3 class="font-bold text-slate-100 border-b border-slate-800 pb-2">Eatery Information</h3>
+            <p class="text-slate-400"><strong>Hours:</strong> <span id="detail-hours" class="block text-slate-300 mt-0.5">Mon-Sun 8:00 AM - 10:00 PM</span></p>
+            <p id="detail-contact" class="text-slate-450"><strong>Phone:</strong> <span class="text-slate-300"></span></p>
+            <button onclick="toggleFavoriteLocal()" id="btn-fav" class="w-full py-2 bg-slate-900 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-455 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+              <span>Save Favorite</span>
+            </button>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="glass-card p-4 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="font-bold text-slate-100">Tourist Reviews</h3>
+            
+            <!-- Submit review -->
+            <div id="detail-review-form" class="space-y-3 border-b border-slate-800 pb-4">
+              <select id="review-rating" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-amber-400 font-bold">
+                <option value="5">★★★★★ Excellent (5/5)</option>
+                <option value="4">★★★★☆ Very Good (4/5)</option>
+                <option value="3">★★★☆☆ Good (3/5)</option>
+                <option value="2">★★☆☆☆ Fair (2/5)</option>
+                <option value="1">★☆☆☆☆ Poor (1/5)</option>
+              </select>
+              <textarea id="review-content" placeholder="Submit your recipe review..." rows="2" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-200"></textarea>
+              <button onclick="submitReviewLocal()" class="w-full py-1.5 bg-brand-500 text-slate-950 text-[10px] font-bold rounded-lg transition hover:bg-brand-600">Submit Review</button>
+            </div>
+
+            <div id="detail-reviews-list" class="space-y-4 text-xs">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. CULINARY HERITAGE STORIES PAGE -->
+    <section id="sec-stories" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <div class="border-b border-slate-900 pb-6">
+        <span class="text-accent-500 text-xs font-bold uppercase tracking-widest">Culinary CMS</span>
+        <h1 class="font-display font-extrabold text-3xl text-white mt-1">Cavite Food Stories</h1>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feed links -->
+        <div id="stories-feed-list" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Read details -->
+        <div class="md:col-span-2">
+          <div id="story-read-card" class="glass-card p-6 rounded-2xl border border-slate-800 space-y-6">
+            <h2 id="story-read-title" class="font-display font-extrabold text-xl md:text-2xl text-white">Select a Food Story</h2>
+            <div id="story-read-meta" class="flex gap-4 text-[10px] text-slate-500 uppercase tracking-wider font-bold"></div>
+            <p id="story-read-body" class="text-xs text-slate-350 leading-relaxed whitespace-pre-line">Loading details...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LOGIN PAGE -->
+    <section id="sec-login" class="section-panel hidden py-20 px-4 flex items-center justify-center">
+      <div class="max-w-md w-full glass-card p-8 rounded-2xl border border-slate-800 text-xs font-semibold text-slate-350 space-y-6">
+        <div class="text-center">
+          <h2 class="font-display text-2xl font-bold text-white">Sign In</h2>
+          <p class="text-[10px] text-slate-500 mt-1">Use demo credentials to access custom dashboards</p>
+        </div>
+        <div id="login-error" class="hidden p-2.5 bg-rose-950 border border-rose-900 text-rose-350 text-center rounded"></div>
+        
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label>Username / Email</label>
+            <input id="login-email" type="text" placeholder="e.g. admin / tourist_ph / mang_tomas" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" />
+          </div>
+          <div class="space-y-1">
+            <label>Password</label>
+            <input id="login-pass" type="password" value="password123" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-slate-200" />
+          </div>
+
+          <div class="p-3 bg-slate-950 rounded border border-slate-850 flex items-center justify-between">
+            <span>What is 5 + 3?</span>
+            <input id="login-captcha" type="number" placeholder="Ans" class="w-16 bg-slate-900 border border-slate-800 rounded text-center text-slate-200" />
+          </div>
+
+          <button onclick="handleLoginLocal()" class="w-full py-3 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition">Sign In</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. REGISTER PAGE -->
+    <section id="sec-register" class="section-panel hidden py-12 px-4 flex flex-col items-center justify-center">
+      <div class="max-w-2xl w-full glass-card p-6 md:p-8 rounded-3xl border border-slate-800 text-xs font-semibold text-slate-350 space-y-6">
+        
+        <!-- Stepper Indicator -->
+        <div class="flex items-center justify-between max-w-md mx-auto pb-4 border-b border-slate-800/60 w-full">
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-1" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-brand-500 text-brand-500 bg-brand-950/40">1</div>
+            <span id="reg-step-label-1" class="text-[10px] uppercase font-bold text-brand-500 tracking-wider">Role</span>
+          </div>
+          <div class="h-0.5 bg-slate-800 flex-grow -mt-4"></div>
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-2" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-slate-800 text-slate-500 bg-slate-900">2</div>
+            <span id="reg-step-label-2" class="text-[10px] uppercase font-bold text-slate-550 tracking-wider">Account</span>
+          </div>
+          <div class="h-0.5 bg-slate-800 flex-grow -mt-4"></div>
+          <div class="flex flex-col items-center space-y-1.5 flex-1">
+            <div id="reg-step-dot-3" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-slate-800 text-slate-500 bg-slate-900">3</div>
+            <span id="reg-step-label-3" class="text-[10px] uppercase font-bold text-slate-550 tracking-wider">Details</span>
+          </div>
+        </div>
+
+        <!-- STEP 1: ROLE SELECTION -->
+        <div id="reg-panel-1" class="space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Create Your Account</h2>
+            <p class="text-[10px] text-slate-400">Choose your role to get started.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Tourist -->
+            <div id="reg-role-1" onclick="setRegRole(1)" class="reg-role-card p-5 bg-slate-900/50 border border-brand-500 bg-brand-950/20 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-brand-950 border border-brand-500/30 flex items-center justify-center text-brand-500">
+                <i data-lucide="user" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm a Tourist</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Explore restaurants, write reviews, save favorites, and discover amazing food.</p>
+              </div>
+            </div>
+
+            <!-- Food Owner -->
+            <div id="reg-role-2" onclick="setRegRole(2)" class="reg-role-card p-5 bg-slate-900/50 border border-slate-800 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon hidden"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i data-lucide="store" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm a Food Owner</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Manage your restaurant, menus, reviews, and grow your food business.</p>
+              </div>
+            </div>
+
+            <!-- Administrator -->
+            <div id="reg-role-3" onclick="setRegRole(3)" class="reg-role-card p-5 bg-slate-900/50 border border-slate-800 rounded-2xl cursor-pointer hover:border-brand-500/50 transition relative flex flex-col items-center text-center space-y-3">
+              <span class="absolute top-3 right-3 text-brand-500 check-icon hidden"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              <div class="w-12 h-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i data-lucide="shield" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-bold text-white text-sm">I'm an Admin</h3>
+                <p class="text-[9px] text-slate-400 leading-relaxed">Moderate listings, manage users, content, reports, and system settings.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button onclick="nextRegStep()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <span>Next</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: ACCOUNT INFORMATION -->
+        <div id="reg-panel-2" class="hidden space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Account Information</h2>
+            <p class="text-[10px] text-slate-400">Enter your credentials to secure your account.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label>Full Name *</label>
+              <input id="reg-name" type="text" placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1">
+              <label>Email Address *</label>
+              <input id="reg-email" type="email" placeholder="e.g. juan@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1 relative">
+              <label>Password *</label>
+              <input id="reg-password" type="password" oninput="handlePasswordInput()" placeholder="Create secure password" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+            <div class="space-y-1">
+              <label>Confirm Password *</label>
+              <input id="reg-confirm-password" type="password" placeholder="Confirm password" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+            </div>
+          </div>
+
+          <!-- Password Checklist -->
+          <div class="p-4 bg-slate-950 border border-slate-900 rounded-2xl space-y-2">
+            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Password Requirements</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-medium text-slate-500">
+              <div id="pw-check-length" class="flex items-center gap-1.5"><span class="chk-icon">○</span> At least 8 characters</div>
+              <div id="pw-check-upper" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One uppercase letter</div>
+              <div id="pw-check-lower" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One lowercase letter</div>
+              <div id="pw-check-number" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One numeric digit</div>
+              <div id="pw-check-special" class="flex items-center gap-1.5"><span class="chk-icon">○</span> One special character</div>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button onclick="prevRegStep()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-850 transition flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> <span>Back</span>
+            </button>
+            <button onclick="nextRegStep()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <span>Next</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: ROLE-SPECIFIC DETAILS -->
+        <div id="reg-panel-3" class="hidden space-y-6">
+          <div class="text-center space-y-1.5">
+            <h2 class="font-display text-2xl font-bold text-white">Details Verification</h2>
+            <p class="text-[10px] text-slate-400">Complete your profile setup based on your role.</p>
+          </div>
+
+          <!-- Tourist Fields -->
+          <div id="reg-fields-tourist" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Nationality</label>
+                <select id="reg-nationality" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300">
+                  <option value="Filipino">Filipino</option>
+                  <option value="American">American</option>
+                  <option value="Japanese">Japanese</option>
+                  <option value="Korean">Korean</option>
+                  <option value="Canadian">Canadian</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label>Travel Preference</label>
+                <select id="reg-preference" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300">
+                  <option value="Street Food">Street Food Explorer</option>
+                  <option value="Fine Dining">Heritage Fine Dining</option>
+                  <option value="Cafes">Local Coffee & Cafes</option>
+                  <option value="Kakanin">Sweet Delicacies / Native</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Food Owner Fields -->
+          <div id="reg-fields-owner" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Business / Restaurant Name *</label>
+                <input id="reg-biz-name" type="text" placeholder="e.g. Rasa Lokal Silang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant Address *</label>
+                <input id="reg-biz-address" type="text" placeholder="e.g. Brgy. Hukay, Silang, Cavite" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Business Registration Date</label>
+                <input id="reg-biz-date" type="date" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300" />
+              </div>
+              <div class="space-y-1">
+                <label>Upload Business Permit (DTI/SEC/Mayor's Permit) *</label>
+                <input id="reg-biz-permit" type="file" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-[10px] text-slate-500" />
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label>Business Description</label>
+              <textarea id="reg-biz-desc" placeholder="Briefly describe your culinary heritage offering..." rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200"></textarea>
+            </div>
+          </div>
+
+          <!-- Admin Fields -->
+          <div id="reg-fields-admin" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>Admin Security Code *</label>
+                <input id="reg-admin-code" type="password" placeholder="Enter security access code" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+                <p class="text-[9px] text-slate-550">For mock testing, use code: <span class="text-brand-500 font-bold">eatywonders2026</span></p>
+              </div>
+              <div class="space-y-1">
+                <label>Department</label>
+                <input id="reg-admin-dept" type="text" placeholder="e.g. Culinary Moderation" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button onclick="prevRegStep()" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-850 transition flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> <span>Back</span>
+            </button>
+            <button onclick="submitRegistration()" class="px-6 py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> <span>Create Account</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. TOURIST DASHBOARD -->
+    <section id="sec-tourist-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      
+      <!-- User Profile Header Card -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center gap-5 justify-between">
+        <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+          <div id="tourist-profile-avatar" class="w-16 h-16 rounded-full bg-gradient-to-tr from-brand-500 to-emerald-400 border border-brand-500/30 flex items-center justify-center text-slate-950 text-2xl font-black">
+            JD
+          </div>
+          <div>
+            <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              <h2 id="tourist-profile-name" class="font-display text-xl font-bold text-white">Juan Dela Cruz</h2>
+              <span class="px-2 py-0.5 bg-brand-950 border border-brand-500/25 text-brand-500 text-[8px] uppercase tracking-wider font-extrabold rounded">Level 3 Explorer</span>
+            </div>
+            <p id="tourist-profile-email" class="text-xs text-slate-400 mt-1">juan@example.com</p>
+            <p class="text-[10px] text-slate-500 mt-1">🇵🇭 Cavite Gastronomy Local Guide</p>
+          </div>
+        </div>
+        
+        <!-- Quick stats cards -->
+        <div class="flex gap-4 text-center text-xs">
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-reviews" class="text-white font-extrabold text-sm">2</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Reviews</p>
+          </div>
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-favs" class="text-white font-extrabold text-sm">1</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Favorites</p>
+          </div>
+          <div class="px-4 py-2.5 bg-slate-950 border border-slate-900 rounded-xl space-y-0.5">
+            <span id="tourist-stat-photos" class="text-white font-extrabold text-sm">4</span>
+            <p class="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Photos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Buttons Navigation -->
+      <div class="flex gap-1 border-b border-slate-800/60 overflow-x-auto pb-0.5 w-full">
+        <button id="btn-t-tab-favs" onclick="switchTouristTab('favs')" class="px-4 py-2.5 text-xs font-bold text-brand-500 border-b-2 border-brand-500 transition whitespace-nowrap">
+          <i data-lucide="heart" class="w-3.5 h-3.5 inline mr-1"></i> My Favorites
+        </button>
+        <button id="btn-t-tab-reviews" onclick="switchTouristTab('reviews')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5 inline mr-1"></i> My Reviews
+        </button>
+        <button id="btn-t-tab-photos" onclick="switchTouristTab('photos')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="camera" class="w-3.5 h-3.5 inline mr-1"></i> Food Photos
+        </button>
+        <button id="btn-t-tab-settings" onclick="switchTouristTab('settings')" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">
+          <i data-lucide="settings" class="w-3.5 h-3.5 inline mr-1"></i> Explorer Settings
+        </button>
+      </div>
+
+      <!-- Content Panels -->
+      <div id="tourist-panel-container">
+        
+        <!-- PANEL: FAVORITES -->
+        <div id="t-panel-favs" class="t-tab-panel space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display font-bold text-base text-white">Saved Restaurants</h3>
+            <button onclick="showSection('map')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-brand-500/30 text-brand-500 rounded-lg text-[10px] font-bold transition">Explore More Locations</button>
+          </div>
+          <div id="tourist-favs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: REVIEWS -->
+        <div id="t-panel-reviews" class="t-tab-panel hidden space-y-6">
+          <h3 class="font-display font-bold text-base text-white">My Reviews History</h3>
+          <div id="tourist-reviews-list" class="space-y-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: PHOTOS -->
+        <div id="t-panel-photos" class="t-tab-panel hidden space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="font-display font-bold text-base text-white">My Food Gallery</h3>
+            <div class="flex items-center gap-2">
+              <input type="file" id="tourist-photo-file" class="hidden" onchange="uploadTouristPhotoLocal()" />
+              <button onclick="document.getElementById('tourist-photo-file').click()" class="px-4 py-2 bg-brand-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-brand-600 transition flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Photo
+              </button>
+            </div>
+          </div>
+          <div id="tourist-photos-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL: SETTINGS -->
+        <div id="t-panel-settings" class="t-tab-panel hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 max-w-xl text-xs font-semibold text-slate-350 space-y-4">
+            <h3 class="font-display font-bold text-base text-white border-b border-slate-800 pb-2">Edit Account Info</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label>First Name</label>
+                <input id="t-sett-fname" type="text" value="Juan" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Last Name</label>
+                <input id="t-sett-lname" type="text" value="Dela Cruz" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Nationality</label>
+                <input id="t-sett-nation" type="text" value="Filipino" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+              </div>
+              <div class="space-y-1">
+                <label>Travel Preference</label>
+                <select id="t-sett-pref" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-300">
+                  <option value="Street Food">Street Food Explorer</option>
+                  <option value="Fine Dining">Heritage Fine Dining</option>
+                  <option value="Cafes">Local Coffee & Cafes</option>
+                  <option value="Kakanin">Sweet Delicacies / Native</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="updateTouristSettingsLocal()" class="w-full py-2 bg-brand-500 text-slate-950 font-bold rounded-lg hover:bg-brand-600 transition">Save Changes</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 8. OWNER DASHBOARD -->
+    <section id="sec-owner-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      
+      <!-- Dashboard Title Header -->
+      <div class="border-b border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 w-full">
+        <div>
+          <span class="text-brand-500 text-xs font-bold uppercase tracking-widest">Merchant Portal</span>
+          <h1 id="owner-dashboard-title" class="font-display text-2xl font-bold text-white">Tomas Heritage Kitchen</h1>
+        </div>
+        <div class="text-xs">
+          Status: <span id="owner-status-badge" class="px-2 py-0.5 bg-emerald-950 text-brand-500 rounded border border-brand-500/10 font-bold uppercase">Approved</span>
+        </div>
+      </div>
+
+      <!-- Merchant Stats Grid -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="owner-stat-total-reviews" class="text-lg font-bold text-white">1</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Customer Reviews</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span class="text-lg font-bold text-white">86</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Menu Views</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="owner-stat-rating" class="text-lg font-bold text-brand-500">4.8 ★</span>
+          <p class="text-[9px] text-slate-500 uppercase tracking-widest">Average Rating</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Left Column (2/3) -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Eatery Profile Settings -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h2 class="font-display font-bold text-base text-white border-b border-slate-850 pb-2">Eatery Profile Information</h2>
+            <form onsubmit="updateOwnerProfileLocal(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label>Restaurant Name *</label>
+                  <input type="text" id="owner-rest-name" value="Tomas Heritage Kitchen" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Address *</label>
+                  <input type="text" id="owner-rest-address" value="Tirona Highway, Kawit, Cavite" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Opening Hours</label>
+                  <input type="text" id="owner-rest-hours" value="Mon-Sun 8:00 AM - 10:00 PM" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Phone Number</label>
+                  <input type="text" id="owner-rest-phone" value="+63 917 123 4567" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Latitude</label>
+                  <input type="number" step="any" id="owner-rest-lat" value="14.4420" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Longitude</label>
+                  <input type="number" step="any" id="owner-rest-lng" value="120.9102" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200" />
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant Description</label>
+                <textarea id="owner-rest-desc" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200">Fresh oysters harvested straight from the shores of Bacoor Bay, prepared in both traditional and modern Caviteño styles.</textarea>
+              </div>
+              <div class="space-y-1">
+                <label>Restaurant History Story</label>
+                <textarea id="owner-rest-history" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200">Kawit is deeply linked to the sea. Our restaurant showcases the local oyster farming (talaba) heritage that has sustained Cavite families for generations.</textarea>
+              </div>
+              <button type="submit" class="w-full py-2.5 bg-brand-500 text-slate-950 font-bold rounded-xl hover:bg-brand-600 transition">Update Listing Profile</button>
+            </form>
+          </div>
+
+          <!-- Recipe & Menu Manager -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <div class="flex justify-between items-center border-b border-slate-850 pb-2">
+              <h2 class="font-display font-bold text-base text-white">Manage Menu Items</h2>
+              <button onclick="toggleMenuFormLocal()" class="px-2.5 py-1.5 bg-brand-500 text-slate-950 font-bold rounded-lg hover:bg-brand-600 transition flex items-center gap-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Dish
+              </button>
+            </div>
+
+            <!-- Inline Add/Edit Menu Item Form -->
+            <div id="owner-menu-form" class="hidden p-4 bg-slate-950 border border-slate-900 rounded-xl space-y-3">
+              <h3 class="font-bold text-white text-xs">Add New Menu Dish</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1">
+                  <label>Dish Name *</label>
+                  <input type="text" id="owner-dish-name" placeholder="e.g. Garlic Baked Oysters" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-200" />
+                </div>
+                <div class="space-y-1">
+                  <label>Category *</label>
+                  <select id="owner-dish-category" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-350">
+                    <option value="Main Course">Main Course</option>
+                    <option value="Appetizer">Appetizer</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Beverage">Beverage</option>
+                  </select>
+                </div>
+                <div class="space-y-1">
+                  <label>Price (PHP) *</label>
+                  <input type="number" id="owner-dish-price" placeholder="e.g. 350" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-slate-200" />
+                </div>
+              </div>
+              <button onclick="saveDishLocal()" class="w-full py-1.5 bg-brand-500 text-slate-950 font-bold rounded hover:bg-brand-600 transition">Save Menu Dish</button>
+            </div>
+
+            <!-- Menu Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-500">
+                    <th class="py-2">Dish Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="owner-menu-tbody" class="divide-y divide-slate-850">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Reviews & Replies Threading -->
+          <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h2 class="font-display font-bold text-base text-white border-b border-slate-850 pb-2">Customer Reviews & Replies</h2>
+            <div id="owner-reviews-thread" class="space-y-4">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column (1/3) -->
+        <div class="space-y-8">
+          
+          <!-- Verification uploads -->
+          <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4 text-xs font-semibold text-slate-350">
+            <h3 class="font-display font-bold text-sm text-white">Upload Business Permit</h3>
+            <p class="text-[10px] text-slate-550 leading-relaxed">Provide DTI or business permit registration document to request admin approval for listing mapping.</p>
+            <input type="file" id="permit-doc-input" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-[10px] text-slate-550" />
+            <button onclick="requestVerificationLocal()" class="w-full py-2 bg-slate-900 border border-slate-800 hover:border-brand-500/30 text-brand-500 font-bold rounded-xl transition">Submit Verification Request</button>
+          </div>
+
+          <!-- Merchant Guideline Tips -->
+          <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3 text-xs text-slate-400">
+            <h4 class="font-bold text-white">💡 Merchant Tips</h4>
+            <ul class="list-disc pl-4 space-y-2 leading-relaxed text-[10px]">
+              <li>Keep your opening hours accurate so tourists can plan their trips.</li>
+              <li>Include traditional heritage stories behind your dishes; travelers love culinary history!</li>
+              <li>Always reply politely to reviews to build community trust.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 9. ADMIN DASHBOARD -->
+    <section id="sec-admin-dashboard" class="section-panel hidden py-10 px-4 max-w-5xl mx-auto space-y-8 animate-fade-in">
+      <div class="border-b border-slate-900 pb-4">
+        <span class="text-brand-500 text-xs font-bold uppercase tracking-widest">Superuser Console</span>
+        <h1 class="font-display text-2xl font-bold text-white">Admin Dashboard</h1>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-users-count" class="text-lg font-bold text-white">4</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Total Users</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-pending-count" class="text-lg font-bold text-white">1</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Pending Permits</p>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-800">
+          <span id="admin-audits-count" class="text-lg font-bold text-white">12</span>
+          <p class="text-[9px] text-slate-550 uppercase tracking-widest font-bold">Audit Events</p>
+        </div>
+      </div>
+
+      <!-- Verification moderators -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="shield" class="w-4 h-4 text-brand-500"></i> Business Verification Queue</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Restaurant</th>
+                <th>Permit Document</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-verif-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Flagged Content Moderator -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> Flagged Content Moderator</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Eatery</th>
+                <th>Author</th>
+                <th>Reported Review</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-flagged-tbody" class="divide-y divide-slate-850">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Database -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-emerald-400"></i> User Accounts Database</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- System Security Audit Logs -->
+      <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="activity" class="w-4 h-4 text-brand-500"></i> Security Audit Logs</h2>
+        <div class="overflow-x-auto text-xs text-left">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500">
+                <th class="py-2">Timestamp</th>
+                <th>User</th>
+                <th>Event Action</th>
+                <th>Entity Type</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="admin-audit-tbody" class="divide-y divide-slate-850">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- JS CONTROLLERS -->
+  <script src="js/state.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboards.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
