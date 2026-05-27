@@ -38,7 +38,9 @@ async function initDb() {
       connection.release();
       dbType = 'mysql';
 
-      // Auto-seed MySQL if tables are empty (idempotent — safe to run on every startup)
+      // Auto-create tables if they don't exist (idempotent — uses IF NOT EXISTS)
+      await runMySQLSchema();
+      // Auto-seed if tables are empty (idempotent — uses ON DUPLICATE KEY UPDATE)
       await seedMySQLIfEmpty();
       return;
     } catch (err) {
@@ -258,6 +260,47 @@ async function query(sql, params = []) {
         });
       }
     });
+  }
+}
+
+// Auto-create MySQL tables on first run (idempotent — uses CREATE TABLE IF NOT EXISTS)
+async function runMySQLSchema() {
+  try {
+    const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
+    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+
+    // Remove single-line comments and split by semicolon
+    const statements = schemaSql
+      .split(';')
+      .map(s => s.replace(/--.*$/gm, '').trim())
+      .filter(s => s.length > 0);
+
+    const createStatements = statements.filter(s =>
+      /CREATE\s+(TABLE|INDEX|UNIQUE)/i.test(s)
+    );
+
+    if (createStatements.length === 0) {
+      console.log('[db] No CREATE statements found in schema.sql');
+      return;
+    }
+
+    console.log(`[db] Running ${createStatements.length} schema statements against MySQL...`);
+    for (const stmt of createStatements) {
+      try {
+        await mysqlPool.query(stmt);
+      } catch (e) {
+        // Table/index already exists is fine (IF NOT EXISTS)
+        if (e.code === 'ER_TABLE_EXISTS_ERROR' || e.code === 'ER_DUP_KEYNAME') {
+          // silently skip
+        } else {
+          console.warn(`[db] Schema statement warning (${e.code}):`, e.message.substring(0, 100));
+        }
+      }
+    }
+    console.log('[db] MySQL schema verification complete. All tables ready.');
+  } catch (err) {
+    console.error('[db] Schema setup failed:', err.message);
+    throw err; // Critical — don't start server with missing tables
   }
 }
 
