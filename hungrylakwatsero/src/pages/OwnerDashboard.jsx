@@ -1422,7 +1422,7 @@ function CustomersTab() {
                   <td className="px-5 py-3">
                     {c.reviewsCount > 0 ? (
                       <span className="flex items-center gap-1 text-emerald-400 font-bold text-xs">
-                        {c.reviewsCount} reviews (★ {c.averageRating.toFixed(1)})
+                        {c.reviewsCount} reviews (★ {Number(c.averageRating || 0).toFixed(1)})
                       </span>
                     ) : (
                       <span className="text-muted">No reviews</span>

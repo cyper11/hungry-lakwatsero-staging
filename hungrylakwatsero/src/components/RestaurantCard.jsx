@@ -318,7 +318,7 @@ export default function RestaurantCard({
           <span
             className={`font-bold text-amber-400 text-glow-gold ${cfg.ratingTextSize}`}
           >
-            {average_rating.toFixed(1)}
+            {Number(average_rating || 0).toFixed(1)}
           </span>
           <span className={`text-muted/70 ${cfg.ratingTextSize}`}>
             ({rating_count.toLocaleString()}{' '}

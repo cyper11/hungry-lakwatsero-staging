@@ -339,7 +339,7 @@ export default function RestaurantDetailPage() {
           </h1>
           <div className="flex items-center gap-3 mt-2">
             <StarDisplay rating={avgRating} size={16} />
-            <span className="text-gold-400 font-bold">{avgRating.toFixed(1)}</span>
+            <span className="text-gold-400 font-bold">{Number(avgRating || 0).toFixed(1)}</span>
             <span className="text-muted text-sm">({restaurant.rating_count || totalReviews} reviews)</span>
           </div>
         </div>
@@ -517,7 +517,7 @@ export default function RestaurantDetailPage() {
               <div className="flex flex-col sm:flex-row gap-6 p-5 rounded-2xl bg-secondary border border-primary/10 mb-6">
                 {/* Big number */}
                 <div className="flex flex-col items-center justify-center shrink-0">
-                  <span className="font-display font-bold text-5xl text-primary">{avgRating.toFixed(1)}</span>
+                  <span className="font-display font-bold text-5xl text-primary">{Number(avgRating || 0).toFixed(1)}</span>
                   <StarDisplay rating={avgRating} size={18} className="mt-1" />
                   <span className="text-muted text-xs mt-1">{restaurant.rating_count || totalReviews} reviews</span>
                 </div>

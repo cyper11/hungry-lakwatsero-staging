@@ -226,7 +226,7 @@ export default function RestaurantModal({ restaurant, onClose, isFavorited, onFa
             className="flex items-center gap-3 mb-6 hover:bg-white/5 p-1.5 -ml-1.5 rounded-lg transition-colors text-left"
           >
             <RatingStars rating={avgRating} size={16} />
-            <span className="font-bold text-amber-400">{avgRating.toFixed(1)}</span>
+            <span className="font-bold text-amber-400">{Number(avgRating || 0).toFixed(1)}</span>
             <span className="text-muted text-sm underline decoration-muted/40 underline-offset-2">
               ({totalReviews.toLocaleString()} reviews)
             </span>
@@ -296,7 +296,7 @@ export default function RestaurantModal({ restaurant, onClose, isFavorited, onFa
               {/* Rating Breakdown */}
               <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl bg-secondary border border-primary/10 mb-6">
                 <div className="flex flex-col items-center justify-center shrink-0 sm:pr-4 sm:border-r border-primary/10">
-                  <span className="font-display font-bold text-4xl text-primary">{avgRating.toFixed(1)}</span>
+                  <span className="font-display font-bold text-4xl text-primary">{Number(avgRating || 0).toFixed(1)}</span>
                   <RatingStars rating={avgRating} size={14} className="mt-1" />
                   <span className="text-muted text-xs mt-1">{totalReviews} reviews</span>
                 </div>
