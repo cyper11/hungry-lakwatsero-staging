@@ -313,24 +313,35 @@ async function seedMySQLIfEmpty() {
       return;
     }
 
-    console.log('[db] MySQL tables are empty. Running auto-seed from seed.sql...');
+    console.log('[db] MySQL seed data is empty. Running auto-seed from seed.sql...');
     const seedPath = path.join(__dirname, '..', 'database', 'seed.sql');
     const seedSql = fs.readFileSync(seedPath, 'utf8');
 
-    // Execute seed as individual statements
-    const statements = seedSql
+    // Remove comment lines before splitting, then split by semicolon
+    const cleanSql = seedSql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const statements = cleanSql
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => s.length > 0);
 
+    let inserted = 0;
     for (const stmt of statements) {
       try {
         await mysqlPool.query(stmt);
+        inserted++;
       } catch (e) {
-        console.warn('[db] Seed statement warning:', e.message);
+        console.warn(`[db] Seed statement #${inserted + 1} failed (${e.code}): ${e.message.substring(0, 80)}`);
       }
     }
-    console.log('[db] MySQL auto-seed complete. Roles, municipalities, and demo users loaded.');
+    console.log(`[db] MySQL auto-seed complete. ${inserted}/${statements.length} statements executed.`);
+
+    // Verify seed actually inserted data
+    const [check] = await mysqlPool.query("SELECT COUNT(*) as count FROM roles");
+    if (check[0].count === 0) {
+      console.error('[db] CRITICAL: Seed executed but roles table is still empty. Check seed.sql compatibility.');
+    } else {
+      console.log(`[db] Verified: ${check[0].count} roles, seed data present.`);
+    }
   } catch (err) {
     console.warn('[db] Auto-seed check failed:', err.message);
     // Non-fatal: server still starts, but registration may fail if seed is missing
